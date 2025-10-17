@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -36,9 +36,13 @@ const Register: React.FC = () => {
     defaultValues: { userRole: 'STUDENT' },
   })
 
+  const submittingRef = useRef(false)
+
   const userRole = watch('userRole')
 
   async function onSubmit(data: Record<string, unknown>) {
+    if (submittingRef.current) return
+    submittingRef.current = true
     try {
       // preparar body
       const firstName = String(data.firstName)
@@ -79,6 +83,8 @@ const Register: React.FC = () => {
       }
       if (!message && err instanceof Error) message = err.message
       toast.error(message || 'Erro ao criar conta')
+    } finally {
+      submittingRef.current = false
     }
   }
 
@@ -152,8 +158,11 @@ const Register: React.FC = () => {
           )}
         </div>
 
-        <div className="mt-6">
-          <button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:opacity-60">
+        <div className="mt-6 flex gap-3">
+          <button type="button" onClick={() => navigate(-1)} className="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-50">
+            Voltar
+          </button>
+          <button type="submit" disabled={isSubmitting} className="flex-1 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:opacity-60">
             {isSubmitting ? 'Criando...' : 'Criar conta'}
           </button>
         </div>

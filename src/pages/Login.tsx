@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -26,11 +26,15 @@ const Login: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({ resolver: yupResolver(schema) })
 
+  const submittingRef = useRef(false)
+
   async function onSubmit(data: LoginForm) {
+    if (submittingRef.current) return
+    submittingRef.current = true
     try {
       await signIn(data.email, data.password)
-  toast.success('Login efetuado com sucesso')
-  navigate('/home')
+      toast.success('Login efetuado com sucesso')
+      navigate('/home')
     } catch (err: unknown) {
       console.error('Erro ao fazer login', err)
       let message: string | undefined
@@ -42,6 +46,8 @@ const Login: React.FC = () => {
       }
       if (!message && err instanceof Error) message = err.message
       toast.error(message || 'Erro na requisição')
+    } finally {
+      submittingRef.current = false
     }
   }
 
@@ -74,9 +80,14 @@ const Login: React.FC = () => {
           {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
         </label>
 
-        <button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 disabled:opacity-60">
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </button>
+        <div className="flex gap-3">
+          <button type="button" onClick={() => navigate(-1)} className="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-50">
+            Voltar
+          </button>
+          <button type="submit" disabled={isSubmitting} className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 disabled:opacity-60">
+            {isSubmitting ? 'Entrando...' : 'Entrar'}
+          </button>
+        </div>
 
         <div className="mt-4 text-center text-sm text-gray-600">
           Ainda não tem conta? <Link to="/register" className="text-indigo-600">Cadastre-se</Link>
