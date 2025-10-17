@@ -1,11 +1,11 @@
 import api from './api'
 
 export async function signUpStudent(body: Record<string, unknown>) {
-  return api.post('/auth/sign-up/student', body)
+  return api.post('/students', body)
 }
 
 export async function signUpTeacher(body: Record<string, unknown>) {
-  return api.post('/auth/sign-up/teacher', body)
+  return api.post('/teachers', body)
 }
 
 export default { signUpStudent, signUpTeacher }
