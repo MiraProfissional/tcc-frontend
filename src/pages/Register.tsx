@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useNavigate } from 'react-router-dom'
-import api from '../utils/Services/api'
+import { signUpStudent, signUpTeacher } from '../utils/Services/UserService'
 import toast from 'react-hot-toast'
 
 // RegisterForm type is inferred from the schema below
@@ -65,9 +65,8 @@ const Register: React.FC = () => {
       if (userRole === 'STUDENT') body['course'] = String(data.course ?? '')
 
       // Assumo endpoints separados para cada tipo; ajuste se necessário
-      const endpoint = data.userRole === 'STUDENT' ? '/auth/sign-up/student' : '/auth/sign-up/teacher'
-
-      await api.post(endpoint, body)
+  if (userRole === 'STUDENT') await signUpStudent(body)
+  else await signUpTeacher(body)
       toast.success('Conta criada com sucesso')
       navigate('/')
     } catch (err: unknown) {
