@@ -1,18 +1,23 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosRequestConfig } from 'axios'
-import { refreshToken as refreshTokenService } from './AuthService'
-
+import config from '../../config/api'
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: config.baseURL,
 })
 
-let isRefreshing = false
-let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (err: unknown) => void; config: AxiosRequestConfig }> = []
+type QueueItem = {
+  resolve: (value?: void | PromiseLike<void>) => void
+  reject: (reason?: unknown) => void
+  config: AxiosRequestConfig
+}
 
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach(p => {
+let isRefreshing = false
+let failedQueue: QueueItem[] = []
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach((p) => {
     if (error) p.reject(error)
-    else p.resolve(token)
+    else p.resolve(undefined)
   })
   failedQueue = []
 }
@@ -24,7 +29,7 @@ api.interceptors.request.use((config) => {
       const parsed = JSON.parse(raw)
       if (parsed?.accessToken) {
         config.headers = config.headers ?? {}
-        config.headers['Authorization'] = `Bearer ${parsed.accessToken}`
+        ;(config.headers as Record<string, string>)['Authorization'] = `Bearer ${parsed.accessToken}`
       }
     } catch {
       // ignore
@@ -34,33 +39,40 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  r => r,
+  (r) => r,
   async (error: AxiosError) => {
     const originalRequest = error.config
     if (!originalRequest) return Promise.reject(error)
 
-  if (error.response?.status === 401 && !((originalRequest as AxiosRequestConfig) as Record<string, unknown>)['_retry']) {
+    const is401 = error.response?.status === 401
+    const retryFlag = (originalRequest as AxiosRequestConfig & { _retry?: boolean })._retry
+
+    if (is401 && !retryFlag) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           failedQueue.push({ resolve, reject, config: originalRequest })
-        }).then((token) => {
-          if (token && originalRequest.headers) originalRequest.headers['Authorization'] = `Bearer ${token}`
-          return api(originalRequest)
-        })
+        }).then(() => api(originalRequest))
       }
 
-  ;(((originalRequest as AxiosRequestConfig) as Record<string, unknown>)['_retry'] as boolean) = true
+  ;(originalRequest as AxiosRequestConfig & { _retry?: boolean })._retry = true
       isRefreshing = true
 
       try {
         const raw = localStorage.getItem('token')
         const parsed = raw ? JSON.parse(raw) : null
-        const newToken = await refreshTokenService(parsed?.refreshToken)
+        // Call refresh endpoint directly with plain axios to avoid circular imports
+        const refreshRes = await axios.post(`${config.baseURL}${config.endpoints.refresh}`, { refreshToken: parsed?.refreshToken })
+        const newToken = refreshRes?.data?.data ?? refreshRes?.data
+        if (!newToken || typeof newToken !== 'object' || !('accessToken' in newToken)) {
+          throw new Error('Resposta inválida ao renovar token')
+        }
         localStorage.setItem('token', JSON.stringify(newToken))
-        processQueue(null, newToken.accessToken)
+        processQueue(undefined)
         return api(originalRequest)
       } catch (err) {
-        processQueue(err, null)
+        processQueue(err)
+        // When refresh fails, clear token so AuthContext can handle redirect/signout
+        localStorage.removeItem('token')
         return Promise.reject(err)
       } finally {
         isRefreshing = false

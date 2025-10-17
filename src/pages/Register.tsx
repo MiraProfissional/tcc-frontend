@@ -49,18 +49,24 @@ const Register: React.FC = () => {
       const lastName = String(data.lastName)
       const email = String(data.email)
       const password = String(data.password)
-      const dateBirthRaw = String(data.dateBirth)
+  const dateBirthRaw = String(data.dateBirth)
+    // Convert date input (local) to an ISO8601 timestamp in UTC with +00:00 offset
+    // Example output: 2001-03-16T00:00:00+00:00
+    const [y, m, d] = dateBirthRaw.split('-').map(Number)
+    const utcDate = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0))
+    // toISOString() returns e.g. 2001-03-16T00:00:00.000Z — replace milliseconds+Z with +00:00
+    const dateBirthIso = utcDate.toISOString().replace(/\.\d{3}Z$/, '+00:00')
       const cpf = String(data.cpf)
       const cellphone = String(data.cellphone)
       const registrationNumber = Number(data.registrationNumber)
       const userRole = String(data.userRole) as 'STUDENT' | 'TEACHER'
 
       const body: Record<string, unknown> = {
-        firstName,
-        lastName,
-        email,
-        password,
-        dateBirth: new Date(dateBirthRaw).toISOString(),
+  firstName,
+  lastName,
+  email,
+  password,
+  dateBirth: dateBirthIso,
         cpf,
         cellphone,
         registrationNumber,

@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState, useRef } from 'react'
 import type { TokenDto } from './Dtos/Token.dto'
 import { signIn as signInService, refreshToken as refreshTokenService, signOut as signOutService } from './Services/AuthService'
 import { jwtDecode } from 'jwt-decode'
+import toast from 'react-hot-toast'
 
 type AuthContextType = {
   token: TokenDto | null
@@ -13,6 +14,13 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigateToLogin = () => {
+    try {
+      window.location.href = '/'
+    } catch {
+      // ignore
+    }
+  }
   const [token, setToken] = useState<TokenDto | null>(() => {
     try {
       const raw = localStorage.getItem('token')
@@ -58,8 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const now = Date.now()
         const msBefore = expiresAt - now - 30_000
         if (msBefore <= 0) {
-          const newToken = await refreshTokenService(token.refreshToken)
-          setToken(newToken)
+          try {
+            const newToken = await refreshTokenService(token.refreshToken)
+            setToken(newToken)
+          } catch {
+            // sign out and redirect to login
+            signOutService()
+            setToken(null)
+            toast.error('Sessão expirada. Faça login novamente.')
+            navigateToLogin()
+          }
           return
         }
         refreshTimer.current = window.setTimeout(async () => {
@@ -67,7 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const newToken = await refreshTokenService(token.refreshToken)
             setToken(newToken)
           } catch {
+            // sign out and redirect to login
+            signOutService()
             setToken(null)
+            toast.error('Sessão expirada. Faça login novamente.')
+            navigateToLogin()
           }
         }, msBefore)
       } catch {

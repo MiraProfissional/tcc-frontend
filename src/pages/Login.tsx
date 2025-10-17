@@ -81,10 +81,13 @@ const Login: React.FC = () => {
         </label>
 
         <div className="flex gap-3">
-          <button type="button" onClick={() => navigate(-1)} className="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-50">
-            Voltar
-          </button>
-          <button type="submit" disabled={isSubmitting} className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            aria-disabled={isSubmitting}
+            className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 disabled:opacity-60"
+          >
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </button>
         </div>
