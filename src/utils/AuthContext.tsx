@@ -1,6 +1,7 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState, useRef } from 'react'
 import type { TokenDto } from './Dtos/Token.dto'
-import { signIn as signInService } from './Services/AuthService'
+import { signIn as signInService, refreshToken as refreshTokenService, signOut as signOutService } from './Services/AuthService'
+import { jwtDecode } from 'jwt-decode'
 
 type AuthContextType = {
   token: TokenDto | null
@@ -21,10 +22,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   })
 
-  useEffect(() => {
-    if (token) localStorage.setItem('token', JSON.stringify(token))
-    else localStorage.removeItem('token')
-  }, [token])
+  const refreshTimer = useRef<number | null>(null)
+
+  function clearRefreshTimer() {
+    if (refreshTimer.current) {
+      window.clearTimeout(refreshTimer.current)
+      refreshTimer.current = null
+    }
+  }
+
+  // scheduleRefresh will run inside useEffect to avoid hook dependency issues
 
   async function signIn(email: string, password: string) {
     const t = await signInService(email, password)
@@ -32,8 +39,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   function signOut() {
+    clearRefreshTimer()
+    signOutService()
     setToken(null)
   }
+
+  useEffect(() => {
+    if (token) localStorage.setItem('token', JSON.stringify(token))
+    else localStorage.removeItem('token')
+
+    clearRefreshTimer()
+    ;(async () => {
+      if (!token) return
+      try {
+        const decoded = jwtDecode<{ exp?: number }>(token.accessToken)
+        if (!decoded?.exp) return
+        const expiresAt = decoded.exp * 1000
+        const now = Date.now()
+        const msBefore = expiresAt - now - 30_000
+        if (msBefore <= 0) {
+          const newToken = await refreshTokenService(token.refreshToken)
+          setToken(newToken)
+          return
+        }
+        refreshTimer.current = window.setTimeout(async () => {
+          try {
+            const newToken = await refreshTokenService(token.refreshToken)
+            setToken(newToken)
+          } catch {
+            setToken(null)
+          }
+        }, msBefore)
+      } catch {
+        // ignore invalid jwt
+      }
+    })()
+
+    return () => clearRefreshTimer()
+  }, [token])
 
   return (
     <AuthContext.Provider value={{ token, isAuthenticated: !!token, signIn, signOut }}>
