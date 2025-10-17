@@ -1,5 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -79,7 +79,7 @@ const Login: React.FC = () => {
         </button>
 
         <div className="mt-4 text-center text-sm text-gray-600">
-          Ainda não tem conta? <a className="text-indigo-600">Cadastre-se</a>
+          Ainda não tem conta? <Link to="/register" className="text-indigo-600">Cadastre-se</Link>
         </div>
       </form>
     </div>
