@@ -2,6 +2,7 @@ import { Route, BrowserRouter, Routes } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import HomePage from "../pages/HomePage";
+import Profile from "../pages/Profile";
 import ProtectedRoute from "../utils/Guards/AuthGuard";
 
 export default function AppRouter() {
@@ -10,11 +11,16 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* /home acts as a layout with nested routes rendered inside HomePage */}
         <Route path="/home" element={
           <ProtectedRoute>
             <HomePage />
           </ProtectedRoute>
-        }/>
+        }>
+          <Route index element={<div />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

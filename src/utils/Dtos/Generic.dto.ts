@@ -1,3 +1,4 @@
-export interface GenericDto {
-    data: any;
+export interface GenericDto<T = unknown> {
+    apiVersion?: string
+    data: T
 }

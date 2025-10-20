@@ -42,7 +42,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // scheduleRefresh will run inside useEffect to avoid hook dependency issues
 
   async function signIn(email: string, password: string) {
-    const t = await signInService(email, password)
+    const wrapped = await signInService(email, password)
+    const t = wrapped?.data
+    if (!t) throw new Error('Resposta inválida no signIn')
     setToken(t)
   }
 
@@ -67,7 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const msBefore = expiresAt - now - 30_000
         if (msBefore <= 0) {
           try {
-            const newToken = await refreshTokenService(token.refreshToken)
+            const wrapped = await refreshTokenService(token.refreshToken)
+            const newToken = wrapped?.data
+            if (!newToken) throw new Error('Resposta inválida ao renovar token')
             setToken(newToken)
           } catch {
             // sign out and redirect to login
@@ -80,7 +84,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         refreshTimer.current = window.setTimeout(async () => {
           try {
-            const newToken = await refreshTokenService(token.refreshToken)
+            const wrapped = await refreshTokenService(token.refreshToken)
+            const newToken = wrapped?.data
+            if (!newToken) throw new Error('Resposta inválida ao renovar token')
             setToken(newToken)
           } catch {
             // sign out and redirect to login

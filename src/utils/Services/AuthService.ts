@@ -1,23 +1,17 @@
 import api from './api'
 import config from '../../config/api'
 import type { TokenDto } from '../Dtos/Token.dto'
+import type { GenericDto } from '../Dtos/Generic.dto'
 
-export async function signIn(email: string, password: string): Promise<TokenDto> {
+export async function signIn(email: string, password: string): Promise<GenericDto<TokenDto>> {
   const res = await api.post(config.endpoints.signIn, { email, password })
-  const token = res?.data?.data ?? res?.data
-  if (!token || typeof token !== 'object' || !('accessToken' in token)) {
-    throw new Error('Resposta inválida do servidor')
-  }
-  return token as TokenDto
+  // return the full wrapped response so callers can rely on GenericDto<T>
+  return res.data as GenericDto<TokenDto>
 }
 
-export async function refreshToken(refreshToken: string): Promise<TokenDto> {
+export async function refreshToken(refreshToken: string): Promise<GenericDto<TokenDto>> {
   const res = await api.post(config.endpoints.refresh, { refreshToken })
-  const token = res?.data?.data ?? res?.data
-  if (!token || typeof token !== 'object' || !('accessToken' in token)) {
-    throw new Error('Resposta inválida ao renovar token')
-  }
-  return token as TokenDto
+  return res.data as GenericDto<TokenDto>
 }
 
 export function signOut() {
