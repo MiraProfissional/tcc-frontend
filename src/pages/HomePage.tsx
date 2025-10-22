@@ -13,6 +13,7 @@ type Payload = { sub?: number; email?: string; userRole?: string;}
 function HomePage() {
   const auth = useContext(AuthContext)
   const token = auth?.token
+  const signOut = auth?.signOut
 
   const [name, setName] = useState('Usuário')
   const [role, setRole] = useState<string>('')
@@ -27,6 +28,13 @@ function HomePage() {
     if (normalized === 'TEACHER') return 'Professor'
     if (normalized === 'ADMIN') return 'Administrador'
     return r
+  }
+
+  const handleLogout = () => {
+    if (signOut) {
+      signOut()
+      toast.success('Logout realizado com sucesso')
+    }
   }
 
   useEffect(() => {
@@ -85,12 +93,12 @@ function HomePage() {
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      <aside className="w-64 bg-white border-r">
+      <aside className="w-64 bg-white border-r flex flex-col">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Bem vindo {name}</h2>
           {role && <p className="text-sm text-gray-500">{mapRole(role)}</p>}
         </div>
-        <nav className="p-4">
+        <nav className="p-4 flex-1">
           <ul className="space-y-2">
             <li>
               <Link to="/home" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-50">Início</Link>
@@ -101,6 +109,16 @@ function HomePage() {
             {/* Disciplines removed per request */}
           </ul>
         </nav>
+        
+        {/* Logout button at the bottom of sidebar */}
+        <div className="p-4 border-t">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-3 py-2 rounded text-red-600 hover:bg-red-50 font-medium"
+          >
+            Sair
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 p-8">

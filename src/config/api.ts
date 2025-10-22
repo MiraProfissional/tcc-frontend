@@ -7,6 +7,7 @@ export const endpoints = {
   teachers: '/teachers',
   disciplines: '/disciplines',
   disciplinesByUser: '/disciplines/by/user',
+  disciplineById: (id: string | number) => `/disciplines/${id}`,
 }
 
 export default {

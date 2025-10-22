@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import AuthContext from '../utils/AuthContext'
+import { getDisciplineById } from '../utils/Services/DisciplineService'
 import toast from 'react-hot-toast'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 
@@ -29,14 +30,23 @@ const DisciplineDetail: React.FC = () => {
   }, [token])
 
   useEffect(() => {
-    // TODO: Fetch discipline details by ID from API
-    // For now this is a placeholder - you'll implement the API call
-    setLoading(true)
-    // Simulated fetch - replace with actual API call
-    setTimeout(() => {
-      setLoading(false)
-      toast('Detalhes da disciplina serão carregados aqui')
-    }, 500)
+    let mounted = true
+    async function loadDiscipline() {
+      if (!id) return
+      setLoading(true)
+      try {
+        const data = await getDisciplineById(id)
+        if (!mounted) return
+        setDiscipline(data)
+      } catch (err) {
+        console.error('Erro ao carregar disciplina', err)
+        toast.error('Não foi possível carregar os detalhes da disciplina')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    loadDiscipline()
+    return () => { mounted = false }
   }, [id])
 
   if (loading) return <div className="p-6">Carregando detalhes...</div>
@@ -94,12 +104,15 @@ const DisciplineDetail: React.FC = () => {
             <p className="text-sm text-gray-600">Horários</p>
             <p className="font-medium">{discipline.disciplineTime.join(', ')}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600">Professor</p>
-            <p className="font-medium">
-              {discipline.teacher.firstName} {discipline.teacher.lastName}
-            </p>
-          </div>
+          {/* Only show teacher info for students */}
+          {!isTeacher && (
+            <div>
+              <p className="text-sm text-gray-600">Professor</p>
+              <p className="font-medium">
+                {discipline.teacher.firstName} {discipline.teacher.lastName}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Students list - only visible to teachers */}
