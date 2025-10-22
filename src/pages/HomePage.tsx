@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode'
 import { getProfile } from '../utils/Services/UserService'
 import { getDisciplinesByUser } from '../utils/Services/DisciplineService'
 import DisciplineCard from '../components/DisciplineCard'
+import CreateDisciplineModal from '../components/CreateDisciplineModal'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 import toast from 'react-hot-toast'
 
@@ -19,6 +20,7 @@ function HomePage() {
   const [role, setRole] = useState<string>('')
   const [disciplines, setDisciplines] = useState<DisciplineDto[]>([])
   const [loadingDisciplines, setLoadingDisciplines] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const location = useLocation()
 
   const mapRole = (r?: string) => {
@@ -139,7 +141,17 @@ function HomePage() {
 
               {/* Disciplines grid */}
               <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">Minhas Disciplinas</h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Minhas Disciplinas</h2>
+                  {(role === 'TEACHER' || role === 'ADMIN') && (
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                    >
+                      + Criar Disciplina
+                    </button>
+                  )}
+                </div>
                 {loadingDisciplines && <p className="text-gray-600">Carregando disciplinas...</p>}
                 {!loadingDisciplines && disciplines.length === 0 && (
                   <p className="text-gray-600">Nenhuma disciplina encontrada.</p>
@@ -147,7 +159,7 @@ function HomePage() {
                 {!loadingDisciplines && disciplines.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {disciplines.map((disc) => (
-                      <DisciplineCard key={disc.id} discipline={disc} />
+                      <DisciplineCard key={disc.id} discipline={disc} isTeacher={role === 'TEACHER' || role === 'ADMIN'} />
                     ))}
                   </div>
                 )}
@@ -158,6 +170,22 @@ function HomePage() {
             <Outlet />
           </div>
         </div>
+
+        <CreateDisciplineModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            // Refresh disciplines list
+            setLoadingDisciplines(true)
+            getDisciplinesByUser()
+              .then((data) => setDisciplines(data))
+              .catch((err) => {
+                console.error('Erro ao carregar disciplinas', err)
+                toast.error('Não foi possível carregar as disciplinas')
+              })
+              .finally(() => setLoadingDisciplines(false))
+          }}
+        />
       </main>
     </div>
   )

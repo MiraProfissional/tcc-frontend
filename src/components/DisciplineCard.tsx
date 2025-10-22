@@ -4,9 +4,10 @@ import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 
 interface DisciplineCardProps {
   discipline: DisciplineDto
+  isTeacher?: boolean
 }
 
-const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline }) => {
+const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline, isTeacher = false }) => {
   return (
     <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
       <h3 className="text-lg font-semibold mb-2">{discipline.name}</h3>
@@ -32,12 +33,14 @@ const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline }) => {
           <span className="font-medium">{discipline.disciplineTime.join(', ')}</span>
         </div>
         
-        <div className="flex justify-between">
-          <span className="text-gray-600">Professor:</span>
-          <span className="font-medium">
-            {discipline.teacher.firstName} {discipline.teacher.lastName}
-          </span>
-        </div>
+        {!isTeacher && (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Professor:</span>
+            <span className="font-medium">
+              {discipline.teacher.firstName} {discipline.teacher.lastName}
+            </span>
+          </div>
+        )}
       </div>
 
       <Link

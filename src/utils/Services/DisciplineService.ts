@@ -2,6 +2,7 @@ import api from './api'
 import config from '../../config/api'
 import type { DisciplineDto, DisciplinesResponseDto } from '../Dtos/Discipline.dto'
 import type { GenericDto } from '../Dtos/Generic.dto'
+import type { CreateDisciplineDto } from '../Dtos/CreateDiscipline.dto'
 
 export async function getDisciplinesByUser(): Promise<DisciplineDto[]> {
   try {
@@ -23,4 +24,14 @@ export async function getDisciplineById(id: string | number): Promise<Discipline
   }
 }
 
-export default { getDisciplinesByUser, getDisciplineById }
+export async function createDiscipline(data: CreateDisciplineDto): Promise<DisciplineDto> {
+  try {
+    const res = await api.post<GenericDto<DisciplineDto>>(config.endpoints.disciplines, data)
+    // unwrap the API wrapper and return just the discipline object
+    return res.data.data
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export default { getDisciplinesByUser, getDisciplineById, createDiscipline }
