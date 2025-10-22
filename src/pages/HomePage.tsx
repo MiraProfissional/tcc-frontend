@@ -3,7 +3,10 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import AuthContext from '../utils/AuthContext'
 import { jwtDecode } from 'jwt-decode'
 import { getProfile } from '../utils/Services/UserService'
-// toast not used here; keep import commented for future use
+import { getDisciplinesByUser } from '../utils/Services/DisciplineService'
+import DisciplineCard from '../components/DisciplineCard'
+import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
+import toast from 'react-hot-toast'
 
 type Payload = { sub?: number; email?: string; userRole?: string;}
 
@@ -13,6 +16,8 @@ function HomePage() {
 
   const [name, setName] = useState('Usuário')
   const [role, setRole] = useState<string>('')
+  const [disciplines, setDisciplines] = useState<DisciplineDto[]>([])
+  const [loadingDisciplines, setLoadingDisciplines] = useState(false)
   const location = useLocation()
 
   const mapRole = (r?: string) => {
@@ -57,6 +62,27 @@ function HomePage() {
     return () => { mounted = false }
   }, [token])
 
+  // Fetch disciplines
+  useEffect(() => {
+    let mounted = true
+    async function loadDisciplines() {
+      if (!token?.accessToken) return
+      setLoadingDisciplines(true)
+      try {
+        const data = await getDisciplinesByUser()
+        if (!mounted) return
+        setDisciplines(data)
+      } catch (err) {
+        console.error('Erro ao carregar disciplinas', err)
+        toast.error('Não foi possível carregar as disciplinas')
+      } finally {
+        if (mounted) setLoadingDisciplines(false)
+      }
+    }
+    loadDisciplines()
+    return () => { mounted = false }
+  }, [token])
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       <aside className="w-64 bg-white border-r">
@@ -82,15 +108,33 @@ function HomePage() {
         <div className="max-w-5xl mx-auto">
           {/* keep the home card above nested content; hide when not at index */}
           {location.pathname === '/home' && (
-            <div className="bg-white p-6 rounded shadow mb-6">
-            <h1 className="text-2xl font-bold mb-4">Página inicial</h1>
-            <p className="text-sm text-gray-600 mb-2">Conteúdo disponível para: <strong>{mapRole(role) || 'Todos'}</strong></p>
-            <div>
-              {role === 'STUDENT' && <p>Visão do estudante com disciplinas e notas.</p>}
-              {role === 'TEACHER' && <p>Visão do professor com turmas e materiais.</p>}
-              {!role && <p>Conteúdo geral do sistema.</p>}
-            </div>
-            </div>
+            <>
+              <div className="bg-white p-6 rounded shadow mb-6">
+                <h1 className="text-2xl font-bold mb-4">Página inicial</h1>
+                <p className="text-sm text-gray-600 mb-2">Conteúdo disponível para: <strong>{mapRole(role) || 'Todos'}</strong></p>
+                <div>
+                  {role === 'STUDENT' && <p>Visão do estudante suas disciplinas</p>}
+                  {role === 'TEACHER' && <p>Visão do professor com suas turmas</p>}
+                  {!role && <p>Conteúdo geral do sistema.</p>}
+                </div>
+              </div>
+
+              {/* Disciplines grid */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-4">Minhas Disciplinas</h2>
+                {loadingDisciplines && <p className="text-gray-600">Carregando disciplinas...</p>}
+                {!loadingDisciplines && disciplines.length === 0 && (
+                  <p className="text-gray-600">Nenhuma disciplina encontrada.</p>
+                )}
+                {!loadingDisciplines && disciplines.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {disciplines.map((disc) => (
+                      <DisciplineCard key={disc.id} discipline={disc} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
           )}
           <div id="home-nested" className="">
             <Outlet />

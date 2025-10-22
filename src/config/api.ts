@@ -5,6 +5,8 @@ export const endpoints = {
   refresh: '/auth/refresh-tokens',
   students: '/students',
   teachers: '/teachers',
+  disciplines: '/disciplines',
+  disciplinesByUser: '/disciplines/by/user',
 }
 
 export default {

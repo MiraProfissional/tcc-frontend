@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import HomePage from "../pages/HomePage";
 import Profile from "../pages/Profile";
+import DisciplineDetail from "../pages/DisciplineDetail";
 import ProtectedRoute from "../utils/Guards/AuthGuard";
 
 export default function AppRouter() {
@@ -20,6 +21,7 @@ export default function AppRouter() {
         }>
           <Route index element={<div />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="discipline/:id" element={<DisciplineDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>
