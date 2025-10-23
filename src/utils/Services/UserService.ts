@@ -62,4 +62,13 @@ export async function getProfile(): Promise<StudentDto | TeacherDto> {
   }
 }
 
-export default { signUpStudent, signUpTeacher, getProfile }
+export async function getAllStudents(): Promise<StudentDto[]> {
+  try {
+    const res = await api.get<GenericDto<StudentDto[]>>(`${config.endpoints.students}/`)
+    return (res.data as GenericDto<StudentDto[]>).data
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export default { signUpStudent, signUpTeacher, getProfile, getAllStudents }

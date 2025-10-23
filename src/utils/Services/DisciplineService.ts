@@ -34,4 +34,47 @@ export async function createDiscipline(data: CreateDisciplineDto): Promise<Disci
   }
 }
 
-export default { getDisciplinesByUser, getDisciplineById, createDiscipline }
+export async function updateDiscipline(data: { 
+  id: number
+  name?: string
+  code?: string
+  semester?: string
+  disciplineTime?: string[]
+  disciplineRoom?: string
+  ipCamera?: number | string
+  students?: number[]
+}): Promise<DisciplineDto> {
+  try {
+    const res = await api.patch<GenericDto<DisciplineDto>>(config.endpoints.disciplines, data)
+    return res.data.data
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export async function deleteDiscipline(id: number): Promise<void> {
+  try {
+    await api.delete(config.endpoints.disciplines, { params: { id } })
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export async function removeStudentFromDiscipline(id: number, studentsIds: number[]): Promise<void> {
+  try {
+    await api.post('/disciplines/remove/student', { id, studentsIds })
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export async function addStudentsToDiscipline(id: number, students: number[]): Promise<DisciplineDto> {
+  try {
+    const res = await api.patch<GenericDto<DisciplineDto>>(config.endpoints.disciplines, { id, students })
+    return res.data.data
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export default { getDisciplinesByUser, getDisciplineById, createDiscipline, updateDiscipline, deleteDiscipline, removeStudentFromDiscipline, addStudentsToDiscipline }

@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import AuthContext from '../utils/AuthContext'
-import { getDisciplineById } from '../utils/Services/DisciplineService'
+import { getDisciplineById, deleteDiscipline, removeStudentFromDiscipline } from '../utils/Services/DisciplineService'
+import EditDisciplineModal from '../components/EditDisciplineModal'
+import AddStudentToDisciplineModal from '../components/AddStudentToDisciplineModal'
 import toast from 'react-hot-toast'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 
-type Payload = { sub?: number; email?: string; userRole?: string }
+type Payload = { sub?: number; email?: string; userRole?: string; role?: string }
 
 const DisciplineDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -16,15 +18,22 @@ const DisciplineDetail: React.FC = () => {
   const [discipline, setDiscipline] = useState<DisciplineDto | null>(null)
   const [loading, setLoading] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
+  const [userId, setUserId] = useState<number | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    // Get user role from token
+    // Get user role and id from token (handles both `userRole` and legacy `role` claim)
     if (token?.accessToken) {
       try {
         const payload = jwtDecode<Payload>(token.accessToken)
-        if (payload?.userRole) setUserRole(String(payload.userRole).toUpperCase())
-      } catch {
-        // ignore
+        const roleClaim = (payload?.userRole ?? payload?.role) as string | undefined
+        if (roleClaim) setUserRole(String(roleClaim).toUpperCase())
+        if (payload?.sub) setUserId(Number(payload.sub))
+      } catch (err) {
+        // ignore decode errors
+        console.warn('Failed to decode token payload', err)
       }
     }
   }, [token])
@@ -49,6 +58,46 @@ const DisciplineDetail: React.FC = () => {
     return () => { mounted = false }
   }, [id])
 
+  const handleDelete = () => {
+    if (!discipline || !window.confirm('Tem certeza que deseja deletar esta disciplina?')) return
+
+    deleteDiscipline(discipline.id)
+      .then(() => {
+        toast.success('Disciplina deletada com sucesso!')
+        navigate('/home')
+      })
+      .catch((err) => {
+        console.error('Erro ao deletar disciplina', err)
+        toast.error('Não foi possível deletar a disciplina')
+      })
+  }
+
+  const handleEditSuccess = () => {
+    // Reload discipline data
+    if (id) {
+      getDisciplineById(id)
+        .then((data) => setDiscipline(data))
+        .catch((err) => {
+          console.error('Erro ao recarregar disciplina', err)
+          toast.error('Não foi possível recarregar os detalhes')
+        })
+    }
+  }
+
+  const handleRemoveStudent = (studentId: number) => {
+    if (!discipline || !window.confirm('Tem certeza que deseja remover este aluno?')) return
+
+    removeStudentFromDiscipline(discipline.id, [studentId])
+      .then(() => {
+        toast.success('Aluno removido com sucesso!')
+        handleEditSuccess()
+      })
+      .catch((err) => {
+        console.error('Erro ao remover aluno', err)
+        toast.error('Não foi possível remover o aluno')
+      })
+  }
+
   if (loading) return <div className="p-6">Carregando detalhes...</div>
 
   if (!discipline) {
@@ -71,7 +120,10 @@ const DisciplineDetail: React.FC = () => {
     )
   }
 
-  const isTeacher = userRole === 'TEACHER' || userRole === 'ADMIN'
+  // Consider user a teacher for UI purposes if they have TEACHER/ADMIN role
+  // or if they are the owner (teacher) of this discipline
+  const isTeacher =
+    userRole === 'TEACHER' || userRole === 'ADMIN' || (discipline && userId !== null && discipline.teacher?.id === userId)
 
   return (
     <div className="p-6">
@@ -85,7 +137,25 @@ const DisciplineDetail: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold mb-4">{discipline.name}</h2>
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-2xl font-bold">{discipline.name}</h2>
+          {isTeacher && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                ✎ Editar
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                🗑 Deletar
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
@@ -104,7 +174,7 @@ const DisciplineDetail: React.FC = () => {
             <p className="text-sm text-gray-600">Horários</p>
             <p className="font-medium">{discipline.disciplineTime.join(', ')}</p>
           </div>
-          {/* Only show teacher info for students */}
+          {/* Only show teacher info for students (hide when viewing as the teacher owner) */}
           {!isTeacher && (
             <div>
               <p className="text-sm text-gray-600">Professor</p>
@@ -115,12 +185,20 @@ const DisciplineDetail: React.FC = () => {
           )}
         </div>
 
-        {/* Students list - only visible to teachers */}
+        {/* Students list - visible to teachers or the teacher owner */}
         {isTeacher && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3">
-              Alunos Matriculados ({discipline.students.length})
-            </h3>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold">
+                Alunos Matriculados ({discipline.students.length})
+              </h3>
+              <button
+                onClick={() => setIsAddStudentModalOpen(true)}
+                className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700"
+              >
+                + Adicionar
+              </button>
+            </div>
             {discipline.students.length === 0 ? (
               <p className="text-gray-600">Nenhum aluno matriculado.</p>
             ) : (
@@ -136,9 +214,17 @@ const DisciplineDetail: React.FC = () => {
                       </p>
                       <p className="text-sm text-gray-600">{student.email}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">Matrícula</p>
-                      <p className="font-medium">{student.registrationNumber}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Matrícula</p>
+                        <p className="font-medium">{student.registrationNumber}</p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveStudent(student.id)}
+                        className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700"
+                      >
+                        Remover
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -156,6 +242,22 @@ const DisciplineDetail: React.FC = () => {
           </div>
         )}
       </div>
+
+      <EditDisciplineModal
+        isOpen={isEditModalOpen}
+        discipline={discipline}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
+
+      {discipline && (
+        <AddStudentToDisciplineModal
+          isOpen={isAddStudentModalOpen}
+          discipline={discipline}
+          onClose={() => setIsAddStudentModalOpen(false)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   )
 }

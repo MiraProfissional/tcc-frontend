@@ -5,5 +5,5 @@ export interface CreateDisciplineDto {
   disciplineTime: string[]
   disciplineRoom: string
   ipCamera: number | string
-  students: number[]
+  students?: number[]
 }
