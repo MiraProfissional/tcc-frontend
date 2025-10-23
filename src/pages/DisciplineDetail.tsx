@@ -64,7 +64,10 @@ const DisciplineDetail: React.FC = () => {
     deleteDiscipline(discipline.id)
       .then(() => {
         toast.success('Disciplina deletada com sucesso!')
-        navigate('/home')
+        // Notify HomePage to refresh disciplines list
+        window.dispatchEvent(new CustomEvent('disciplineDeleted', { detail: { disciplineId: discipline.id } }))
+        // Small delay to ensure event is processed before navigation
+        setTimeout(() => navigate('/home'), 100)
       })
       .catch((err) => {
         console.error('Erro ao deletar disciplina', err)

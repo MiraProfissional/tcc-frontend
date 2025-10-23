@@ -93,6 +93,23 @@ function HomePage() {
     return () => { mounted = false }
   }, [token])
 
+  // Listen for discipline deletion event and refresh list
+  useEffect(() => {
+    const handleDisciplineDeleted = () => {
+      // Reload disciplines when one is deleted
+      if (token?.accessToken) {
+        getDisciplinesByUser()
+          .then((data) => setDisciplines(data))
+          .catch((err) => {
+            console.error('Erro ao recarregar disciplinas', err)
+          })
+      }
+    }
+
+    window.addEventListener('disciplineDeleted', handleDisciplineDeleted)
+    return () => window.removeEventListener('disciplineDeleted', handleDisciplineDeleted)
+  }, [token])
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       <aside className="w-64 bg-white border-r flex flex-col">
