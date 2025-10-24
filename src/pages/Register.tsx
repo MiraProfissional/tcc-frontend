@@ -1,9 +1,11 @@
-import React, { useRef } from 'react'
+import React, { useRef, useContext } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { useNavigate } from 'react-router-dom'
 import { signUpStudent, signUpTeacher } from '../utils/Services/UserService'
+import AuthContext from '../utils/AuthContext'
+import { courseOptions } from '../utils/Enums/Course.enum'
 import toast from 'react-hot-toast'
 
 // RegisterForm type is inferred from the schema below
@@ -31,6 +33,7 @@ const schema = yup.object({
 
 const Register: React.FC = () => {
   const navigate = useNavigate()
+  const auth = useContext(AuthContext)
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
     resolver: yupResolver(schema),
     defaultValues: { userRole: 'STUDENT' },
@@ -77,8 +80,18 @@ const Register: React.FC = () => {
       // Assumo endpoints separados para cada tipo; ajuste se necessário
   if (userRole === 'STUDENT') await signUpStudent(body)
   else await signUpTeacher(body)
-      toast.success('Conta criada com sucesso')
-      navigate('/')
+      
+      toast.success('Conta criada com sucesso! Fazendo login...')
+      
+      // Auto-login after successful registration
+      try {
+        await auth?.signIn(email, password)
+        navigate('/home')
+      } catch (loginErr) {
+        console.error('Erro ao fazer login automático', loginErr)
+        toast.error('Conta criada, mas erro ao fazer login automático. Faça login manualmente.')
+        navigate('/')
+      }
     } catch (err: unknown) {
       let message: string | undefined
       if (typeof err === 'object' && err !== null) {
@@ -158,7 +171,14 @@ const Register: React.FC = () => {
           {userRole === 'STUDENT' && (
             <div className="col-span-2">
               <label className="block mb-1 text-sm text-gray-700">Curso</label>
-              <input {...register('course')} className="w-full p-2 border rounded" />
+              <select {...register('course')} className="w-full p-2 border rounded">
+                <option value="">Selecione um curso</option>
+                {courseOptions.map((course) => (
+                  <option key={course.value} value={course.value}>
+                    {course.label}
+                  </option>
+                ))}
+              </select>
               {errors.course && <p className="text-sm text-red-600">{errors.course.message}</p>}
             </div>
           )}
