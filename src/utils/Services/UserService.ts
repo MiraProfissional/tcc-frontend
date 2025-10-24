@@ -81,4 +81,33 @@ export async function validateUserExists(): Promise<boolean> {
   }
 }
 
-export default { signUpStudent, signUpTeacher, getProfile, getAllStudents, validateUserExists }
+export async function updateUserProfile(body: Record<string, unknown>): Promise<StudentDto | TeacherDto> {
+  try {
+    const raw = localStorage.getItem('token')
+    const parsed = raw ? JSON.parse(raw) : null
+    const access = parsed?.accessToken
+    if (!access) throw new Error('No token')
+    
+    const mod = await import('jwt-decode')
+    const jwtDecode = ((mod as unknown) as { default?: (t: string) => unknown; jwtDecode?: (t: string) => unknown }).default ?? ((mod as unknown) as { default?: (t: string) => unknown; jwtDecode?: (t: string) => unknown }).jwtDecode
+    const payload = jwtDecode!(access) as Record<string, unknown>
+    
+    const roleRaw = payload?.userRole ?? payload?.role ?? ''
+    const role = String(roleRaw).toUpperCase()
+    const isStudent = role.includes('STUDENT')
+    
+    if (isStudent) {
+      const url = `${config.endpoints.students}`
+      const res = await api.patch<GenericDto<StudentDto>>(url, body)
+      return (res.data as GenericDto<StudentDto>).data
+    }
+    
+    const url = `${config.endpoints.teachers}`
+    const res = await api.patch<GenericDto<TeacherDto>>(url, body)
+    return (res.data as GenericDto<TeacherDto>).data
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
+export default { signUpStudent, signUpTeacher, getProfile, getAllStudents, validateUserExists, updateUserProfile }

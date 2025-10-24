@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { getProfile } from '../utils/Services/UserService'
+import { formatDateBirth } from '../utils/Helpers/dateFormatter'
+import EditProfileModal from '../components/EditProfileModal'
 import toast from 'react-hot-toast'
 import type { StudentDto } from '../utils/Dtos/Student.dto'
 import type { TeacherDto } from '../utils/Dtos/Teacher.dto'
@@ -18,6 +20,7 @@ const mapRole = (role?: string) => {
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileType | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -30,21 +33,43 @@ const Profile: React.FC = () => {
       .finally(() => setLoading(false))
   }, [])
 
+  const handleEditSuccess = () => {
+    // Reload profile data
+    getProfile()
+      .then((data) => setProfile(data as ProfileType))
+      .catch((err: unknown) => {
+        console.error('Erro ao recarregar perfil', err)
+      })
+  }
+
   if (loading) return <div className="p-6">Carregando...</div>
 
   const person = profile ?? null
+  const isStudent = person?.userRole === 'STUDENT'
 
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold mb-4">Meu Perfil</h2>
       {person ? (
         <div className="bg-white shadow rounded p-6 max-w-xl">
-          <p className="text-lg font-medium">{person.firstName} {person.lastName}</p>
-          <p className="text-sm text-gray-600">{person.email}</p>
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <p className="text-lg font-medium">{person.firstName} {person.lastName}</p>
+              <p className="text-sm text-gray-600">{person.email}</p>
+            </div>
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              ✎ Editar
+            </button>
+          </div>
+          
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-xs text-gray-500">Data de Nascimento</div>
-              <div>{person.dateBirth}</div>
+              
+              <div className="text-xs text-gray-500">Matrícula</div>
+              <div>{person.registrationNumber}</div>
             </div>
             <div>
               <div className="text-xs text-gray-500">CPF</div>
@@ -55,8 +80,8 @@ const Profile: React.FC = () => {
               <div>{person.cellphone}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Matrícula</div>
-              <div>{person.registrationNumber}</div>
+              <div className="text-xs text-gray-500">Data de Nascimento</div>
+              <div>{formatDateBirth(person.dateBirth)}</div>
             </div>
             <div>
               <div className="text-xs text-gray-500">Perfil</div>
@@ -73,6 +98,14 @@ const Profile: React.FC = () => {
       ) : (
         <p>Perfil não disponível</p>
       )}
+
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        profile={person}
+        isStudent={isStudent}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
     </div>
   )
 }
