@@ -71,4 +71,14 @@ export async function getAllStudents(): Promise<StudentDto[]> {
   }
 }
 
-export default { signUpStudent, signUpTeacher, getProfile, getAllStudents }
+export async function validateUserExists(): Promise<boolean> {
+  try {
+    await getProfile()
+    return true
+  } catch {
+    // User doesn't exist or token is invalid
+    return false
+  }
+}
+
+export default { signUpStudent, signUpTeacher, getProfile, getAllStudents, validateUserExists }

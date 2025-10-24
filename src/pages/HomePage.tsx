@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthContext from '../utils/AuthContext'
 import { jwtDecode } from 'jwt-decode'
-import { getProfile } from '../utils/Services/UserService'
+import { getProfile, validateUserExists } from '../utils/Services/UserService'
 import { getDisciplinesByUser } from '../utils/Services/DisciplineService'
 import DisciplineCard from '../components/DisciplineCard'
 import CreateDisciplineModal from '../components/CreateDisciplineModal'
@@ -15,6 +15,7 @@ function HomePage() {
   const auth = useContext(AuthContext)
   const token = auth?.token
   const signOut = auth?.signOut
+  const navigate = useNavigate()
 
   const [name, setName] = useState('Usuário')
   const [role, setRole] = useState<string>('')
@@ -38,6 +39,29 @@ function HomePage() {
       toast.success('Logout realizado com sucesso')
     }
   }
+
+  // Validate if user still exists in the backend
+  useEffect(() => {
+    let mounted = true
+    async function validateUser() {
+      if (!token?.accessToken) return
+      
+      const userExists = await validateUserExists()
+      if (!mounted) return
+      
+      if (!userExists) {
+        // User doesn't exist anymore, logout and redirect
+        if (signOut) {
+          signOut()
+        }
+        toast.error('Sua conta foi deletada ou não existe mais. Faça login novamente.')
+        navigate('/')
+      }
+    }
+
+    validateUser()
+    return () => { mounted = false }
+  }, [token, signOut, navigate])
 
   useEffect(() => {
     let mounted = true
