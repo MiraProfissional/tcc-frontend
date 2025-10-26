@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import FaceRecognitionButton from './FaceRecognitionButton'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 
 interface DisciplineCardProps {
@@ -43,12 +44,17 @@ const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline, isTeacher =
         )}
       </div>
 
-      <Link
-        to={`/home/discipline/${discipline.id}`}
-        className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-      >
-        Detalhes
-      </Link>
+      <div className="space-y-2">
+        {isTeacher && (
+          <FaceRecognitionButton disciplineId={discipline.id} />
+        )}
+        <Link
+          to={`/home/discipline/${discipline.id}`}
+          className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+        >
+          Detalhes
+        </Link>
+      </div>
     </div>
   )
 }

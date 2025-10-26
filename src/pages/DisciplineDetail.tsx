@@ -5,6 +5,7 @@ import AuthContext from '../utils/AuthContext'
 import { getDisciplineById, deleteDiscipline, removeStudentFromDiscipline } from '../utils/Services/DisciplineService'
 import EditDisciplineModal from '../components/EditDisciplineModal'
 import AddStudentToDisciplineModal from '../components/AddStudentToDisciplineModal'
+import FaceRecognitionButton from '../components/FaceRecognitionButton'
 import toast from 'react-hot-toast'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 
@@ -144,6 +145,7 @@ const DisciplineDetail: React.FC = () => {
           <h2 className="text-2xl font-bold">{discipline.name}</h2>
           {isTeacher && (
             <div className="flex gap-2">
+              <FaceRecognitionButton disciplineId={discipline.id} variant="icon" />
               <button
                 onClick={() => setIsEditModalOpen(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
