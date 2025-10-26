@@ -65,12 +65,24 @@ const EditDisciplineModal: React.FC<EditDisciplineModalProps> = ({
   }, [isOpen, discipline, setValue])
 
   const addTime = () => {
-    if (timeInput.trim()) {
-      const currentTimes = disciplineTime || []
-      const updated = [...currentTimes, timeInput]
-      setValue('disciplineTime', updated)
-      setTimeInput('')
+    if (!timeInput.trim()) {
+      toast.error('Por favor, insira um horário')
+      return
     }
+
+    const currentTimes = disciplineTime || []
+    const isDuplicate = currentTimes.some(
+      (time) => time.toLowerCase() === timeInput.trim().toLowerCase()
+    )
+
+    if (isDuplicate) {
+      toast.error('Este horário já foi adicionado')
+      return
+    }
+
+    const updated = [...currentTimes, timeInput.trim()]
+    setValue('disciplineTime', updated)
+    setTimeInput('')
   }
 
   const removeTime = (index: number) => {
