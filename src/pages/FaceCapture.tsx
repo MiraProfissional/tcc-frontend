@@ -133,13 +133,6 @@ const FaceCapture: React.FC = () => {
     startCamera()
   }
 
-  // Skip photo upload (go directly to home)
-  const skipPhoto = () => {
-    if (window.confirm('Deseja pular a captura de foto do rosto? Você poderá fazer isso depois.')) {
-      navigate('/home')
-    }
-  }
-
   useEffect(() => {
     return () => {
       stopCamera()
@@ -294,15 +287,6 @@ const FaceCapture: React.FC = () => {
           )}
         </div>
 
-        {/* Skip Option */}
-        <div className="text-center">
-          <button
-            onClick={skipPhoto}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
-          >
-            ⏭️ Pular por enquanto
-          </button>
-        </div>
       </div>
     </div>
   )
