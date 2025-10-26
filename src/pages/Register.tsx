@@ -86,7 +86,13 @@ const Register: React.FC = () => {
       // Auto-login after successful registration
       try {
         await auth?.signIn(email, password)
-        navigate('/home')
+        
+        // Redirect to face capture for students, to home for teachers
+        if (userRole === 'STUDENT') {
+          navigate('/face-capture')
+        } else {
+          navigate('/home')
+        }
       } catch (loginErr) {
         console.error('Erro ao fazer login automático', loginErr)
         toast.error('Conta criada, mas erro ao fazer login automático. Faça login manualmente.')

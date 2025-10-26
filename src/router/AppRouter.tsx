@@ -1,6 +1,7 @@
 import { Route, BrowserRouter, Routes } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import FaceCapture from "../pages/FaceCapture";
 import HomePage from "../pages/HomePage";
 import Profile from "../pages/Profile";
 import DisciplineDetail from "../pages/DisciplineDetail";
@@ -12,6 +13,7 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/face-capture" element={<FaceCapture />} />
 
         {/* /home acts as a layout with nested routes rendered inside HomePage */}
         <Route path="/home" element={
