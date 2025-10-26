@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from 'react'
+import React, { useRef, useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom'
 import { signUpStudent, signUpTeacher } from '../utils/Services/UserService'
 import AuthContext from '../utils/AuthContext'
 import { courseOptions } from '../utils/Enums/Course.enum'
+import PasswordTooltip from '../components/PasswordTooltip'
+import { maskCPF, maskCellphone, unmaskCPF, unmaskCellphone } from '../utils/Helpers/masks'
 import toast from 'react-hot-toast'
 
 // RegisterForm type is inferred from the schema below
@@ -34,6 +36,7 @@ const schema = yup.object({
 const Register: React.FC = () => {
   const navigate = useNavigate()
   const auth = useContext(AuthContext)
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
     resolver: yupResolver(schema),
     defaultValues: { userRole: 'STUDENT' },
@@ -42,6 +45,7 @@ const Register: React.FC = () => {
   const submittingRef = useRef(false)
 
   const userRole = watch('userRole')
+  const password = watch('password')
 
   async function onSubmit(data: Record<string, unknown>) {
     if (submittingRef.current) return
@@ -52,24 +56,25 @@ const Register: React.FC = () => {
       const lastName = String(data.lastName)
       const email = String(data.email)
       const password = String(data.password)
-  const dateBirthRaw = String(data.dateBirth)
-    // Convert date input (local) to an ISO8601 timestamp in UTC with +00:00 offset
-    // Example output: 2001-03-16T00:00:00+00:00
-    const [y, m, d] = dateBirthRaw.split('-').map(Number)
-    const utcDate = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0))
-    // toISOString() returns e.g. 2001-03-16T00:00:00.000Z — replace milliseconds+Z with +00:00
-    const dateBirthIso = utcDate.toISOString().replace(/\.\d{3}Z$/, '+00:00')
-      const cpf = String(data.cpf)
-      const cellphone = String(data.cellphone)
+      const dateBirthRaw = String(data.dateBirth)
+      // Convert date input (local) to an ISO8601 timestamp in UTC with +00:00 offset
+      // Example output: 2001-03-16T00:00:00+00:00
+      const [y, m, d] = dateBirthRaw.split('-').map(Number)
+      const utcDate = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0))
+      // toISOString() returns e.g. 2001-03-16T00:00:00.000Z — replace milliseconds+Z with +00:00
+      const dateBirthIso = utcDate.toISOString().replace(/\.\d{3}Z$/, '+00:00')
+      // Remove masks before sending
+      const cpf = unmaskCPF(String(data.cpf))
+      const cellphone = unmaskCellphone(String(data.cellphone))
       const registrationNumber = Number(data.registrationNumber)
       const userRole = String(data.userRole) as 'STUDENT' | 'TEACHER'
 
       const body: Record<string, unknown> = {
-  firstName,
-  lastName,
-  email,
-  password,
-  dateBirth: dateBirthIso,
+        firstName,
+        lastName,
+        email,
+        password,
+        dateBirth: dateBirthIso,
         cpf,
         cellphone,
         registrationNumber,
@@ -78,15 +83,15 @@ const Register: React.FC = () => {
       if (userRole === 'STUDENT') body['course'] = String(data.course ?? '')
 
       // Assumo endpoints separados para cada tipo; ajuste se necessário
-  if (userRole === 'STUDENT') await signUpStudent(body)
-  else await signUpTeacher(body)
-      
+      if (userRole === 'STUDENT') await signUpStudent(body)
+      else await signUpTeacher(body)
+
       toast.success('Conta criada com sucesso! Fazendo login...')
-      
+
       // Auto-login after successful registration
       try {
         await auth?.signIn(email, password)
-        
+
         // Redirect to face capture for students, to home for teachers
         if (userRole === 'STUDENT') {
           navigate('/face-capture')
@@ -146,28 +151,79 @@ const Register: React.FC = () => {
             <input {...register('email')} type="email" className="w-full p-2 border rounded" />
             {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
           </div>
+          
           <div>
             <label className="block mb-1 text-sm text-gray-700">Senha</label>
-            <input {...register('password')} type="password" className="w-full p-2 border rounded" />
+            <div className="relative">
+              <input
+                {...register('password')}
+                type={showPassword ? 'text' : 'password'}
+                className="w-full p-2 pr-10 border rounded"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM19.5 13a8.971 8.971 0 01-1.07 3.6M12 19c4.478 0 8.268-2.943 9.543-7A9.969 9.969 0 0020.437 5.197M3 3l18 18" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7C7.523 19 3.732 16.057 2.458 12z" />
+                    </svg>
+                  )}
+                </button>
+                <PasswordTooltip password={password} />
+              </div>
+            </div>
             {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
           </div>
 
           <div>
             <label className="block mb-1 text-sm text-gray-700">Data de Nascimento</label>
-            <input {...register('dateBirth')} type="date" className="w-full p-2 border rounded" />
+            <input
+              {...register('dateBirth')}
+              type="date"
+              className="w-full p-2 border rounded"
+            />
             {errors.dateBirth && <p className="text-sm text-red-600">{errors.dateBirth.message}</p>}
           </div>
+          
           <div>
             <label className="block mb-1 text-sm text-gray-700">CPF</label>
-            <input {...register('cpf')} className="w-full p-2 border rounded" />
+            <input
+              {...register('cpf')}
+              className="w-full p-2 border rounded"
+              onChange={(e) => {
+                const masked = maskCPF(e.target.value)
+                e.target.value = masked
+              }}
+              maxLength={14}
+              placeholder="123.456.789-00"
+            />
             {errors.cpf && <p className="text-sm text-red-600">{errors.cpf.message}</p>}
           </div>
 
           <div>
             <label className="block mb-1 text-sm text-gray-700">Celular</label>
-            <input {...register('cellphone')} className="w-full p-2 border rounded" />
+            <input
+              {...register('cellphone')}
+              className="w-full p-2 border rounded"
+              onChange={(e) => {
+                const masked = maskCellphone(e.target.value)
+                e.target.value = masked
+              }}
+              maxLength={15}
+              placeholder="(12) 98765-4321"
+            />
             {errors.cellphone && <p className="text-sm text-red-600">{errors.cellphone.message}</p>}
           </div>
+          
           <div>
             <label className="block mb-1 text-sm text-gray-700">Nº Matrícula</label>
             <input {...register('registrationNumber')} className="w-full p-2 border rounded" />

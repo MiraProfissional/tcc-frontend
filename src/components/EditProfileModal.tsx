@@ -5,6 +5,7 @@ import * as yup from 'yup'
 import toast from 'react-hot-toast'
 import { updateUserProfile } from '../utils/Services/UserService'
 import { formatDateToHTMLInput, parseHTMLDateToISO } from '../utils/Helpers/dateFormatter'
+import { maskCPF, maskCellphone, unmaskCPF, unmaskCellphone } from '../utils/Helpers/masks'
 import { courseOptions } from '../utils/Enums/Course.enum'
 import type { StudentDto } from '../utils/Dtos/Student.dto'
 import type { TeacherDto } from '../utils/Dtos/Teacher.dto'
@@ -90,8 +91,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         lastName: formData.lastName,
         email: formData.email,
         dateBirth: parseHTMLDateToISO(String(formData.dateBirth)),
-        cpf: formData.cpf,
-        cellphone: formData.cellphone,
+        cpf: unmaskCPF(String(formData.cpf)),
+        cellphone: unmaskCellphone(String(formData.cellphone)),
         registrationNumber: formData.registrationNumber,
       }
 
@@ -172,7 +173,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 type="text"
                 {...register('cpf')}
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="12345678900"
+                placeholder="123.456.789-00"
+                maxLength={14}
+                onChange={(e) => {
+                  const masked = maskCPF(e.target.value)
+                  e.target.value = masked
+                }}
               />
               {errors.cpf && <p className="text-red-600 text-sm mt-1">{errors.cpf.message}</p>}
             </div>
@@ -185,7 +191,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 type="text"
                 {...register('cellphone')}
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="12987654321"
+                placeholder="(12) 98765-4321"
+                maxLength={15}
+                onChange={(e) => {
+                  const masked = maskCellphone(e.target.value)
+                  e.target.value = masked
+                }}
               />
               {errors.cellphone && <p className="text-red-600 text-sm mt-1">{errors.cellphone.message}</p>}
             </div>

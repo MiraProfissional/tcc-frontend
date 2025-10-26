@@ -14,8 +14,6 @@ export default function AppRouter() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/face-capture" element={<FaceCapture />} />
-
-        {/* /home acts as a layout with nested routes rendered inside HomePage */}
         <Route path="/home" element={
           <ProtectedRoute>
             <HomePage />
