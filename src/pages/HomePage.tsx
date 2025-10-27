@@ -6,6 +6,7 @@ import { getProfile, validateUserExists } from '../utils/Services/UserService'
 import { getDisciplinesByUser } from '../utils/Services/DisciplineService'
 import DisciplineCard from '../components/DisciplineCard'
 import CreateDisciplineModal from '../components/CreateDisciplineModal'
+import ScheduleGrid from '../components/ScheduleGrid'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
 import toast from 'react-hot-toast'
 
@@ -135,8 +136,8 @@ function HomePage() {
   }, [token])
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
-      <aside className="w-64 bg-white border-r flex flex-col">
+    <div className="h-screen flex bg-gray-100">
+      <aside className="w-64 bg-white border-r flex flex-col fixed h-screen">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Bem vindo {name}</h2>
           {role && <p className="text-sm text-gray-500">{mapRole(role)}</p>}
@@ -164,21 +165,18 @@ function HomePage() {
         </div>
       </aside>
 
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 overflow-y-auto ml-64">
         {/* Main content area — nested routes will render here */}
         <div className="max-w-5xl mx-auto">
           {/* keep the home card above nested content; hide when not at index */}
           {location.pathname === '/home' && (
             <>
-              <div className="bg-white p-6 rounded shadow mb-6">
-                <h1 className="text-2xl font-bold mb-4">Página inicial</h1>
-                <p className="text-sm text-gray-600 mb-2">Conteúdo disponível para: <strong>{mapRole(role) || 'Todos'}</strong></p>
-                <div>
-                  {role === 'STUDENT' && <p>Visão do estudante suas disciplinas</p>}
-                  {role === 'TEACHER' && <p>Visão do professor com suas turmas</p>}
-                  {!role && <p>Conteúdo geral do sistema.</p>}
+              {/* Schedule Grid */}
+              {!loadingDisciplines && disciplines.length > 0 && (
+                <div className="mb-6">
+                  <ScheduleGrid disciplines={disciplines} />
                 </div>
-              </div>
+              )}
 
               {/* Disciplines grid */}
               <div className="mb-6">
