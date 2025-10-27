@@ -217,21 +217,21 @@ const DisciplineDetail: React.FC = () => {
           )}
         </div>
 
-        {/* Tabs for Sessions and Students - visible to teachers or the teacher owner */}
-        {isTeacher && (
-          <div className="mt-6">
-            {/* Tab Navigation */}
-            <div className="flex border-b mb-4">
-              <button
-                onClick={() => setActiveTab('sessions')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'sessions'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                📚 Aulas Registradas ({sessions.length})
-              </button>
+        {/* Tabs for Sessions and Students */}
+        <div className="mt-6">
+          {/* Tab Navigation */}
+          <div className="flex border-b mb-4">
+            <button
+              onClick={() => setActiveTab('sessions')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'sessions'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📚 Aulas Registradas ({sessions.length})
+            </button>
+            {isTeacher && (
               <button
                 onClick={() => setActiveTab('students')}
                 className={`px-4 py-2 font-medium transition-colors ${
@@ -242,16 +242,17 @@ const DisciplineDetail: React.FC = () => {
               >
                 👥 Alunos Matriculados ({discipline.students.length})
               </button>
-            </div>
+            )}
+          </div>
 
-            {/* Tab Content */}
-            {activeTab === 'sessions' && (
-              <div>
-                <SessionList sessions={sessions} loading={loadingSessions} />
-              </div>
+          {/* Tab Content */}
+          {activeTab === 'sessions' && (
+            <div>
+              <SessionList sessions={sessions} loading={loadingSessions} isTeacher={isTeacher} />
+            </div>
             )}
 
-            {activeTab === 'students' && (
+            {activeTab === 'students' && isTeacher && (
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-lg font-semibold">
@@ -298,16 +299,6 @@ const DisciplineDetail: React.FC = () => {
               </div>
             )}
           </div>
-        )}
-
-        {/* For students, show different content */}
-        {!isTeacher && (
-          <div className="mt-6">
-            <p className="text-gray-600">
-              Informações adicionais para alunos serão exibidas aqui.
-            </p>
-          </div>
-        )}
       </div>
 
       <EditDisciplineModal

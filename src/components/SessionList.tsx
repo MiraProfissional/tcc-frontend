@@ -1,14 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { formatDateBirth } from '../utils/Helpers/dateFormatter'
 import type { SessionDto } from '../utils/Dtos/Session.dto'
+import AuthContext from '../utils/AuthContext'
+import { jwtDecode } from 'jwt-decode'
 
 interface SessionListProps {
   sessions: SessionDto[]
   loading: boolean
+  isTeacher?: boolean
 }
 
-const SessionList: React.FC<SessionListProps> = ({ sessions, loading }) => {
+type Payload = { sub?: number; email?: string; userRole?: string; }
+
+const SessionList: React.FC<SessionListProps> = ({ sessions, loading, isTeacher = false }) => {
+  const auth = useContext(AuthContext)
+  const token = auth?.token
   const [expandedSessionId, setExpandedSessionId] = useState<number | null>(null)
+
+  // Get current user ID from token
+  let currentUserId: number | null = null
+  try {
+    if (token?.accessToken) {
+      const payload = jwtDecode<Payload>(token.accessToken)
+      currentUserId = payload.sub ?? null
+    }
+  } catch {
+    // ignore
+  }
 
   const toggleExpand = (sessionId: number) => {
     setExpandedSessionId(expandedSessionId === sessionId ? null : sessionId)
@@ -58,6 +76,10 @@ const SessionList: React.FC<SessionListProps> = ({ sessions, loading }) => {
           ? Math.round((session.presentStudents.length / totalStudents) * 100)
           : 0
 
+        // Check if current user is in present or absent list (for students view)
+        const isCurrentUserPresent = session.presentStudents.some((s) => s.id === currentUserId)
+        const isCurrentUserAbsent = session.absentStudents.some((s) => s.id === currentUserId)
+
         return (
           <div key={session.id} className="border rounded-lg overflow-hidden">
             {/* Session Header */}
@@ -77,17 +99,40 @@ const SessionList: React.FC<SessionListProps> = ({ sessions, loading }) => {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">
-                    Presentes: <span className="font-semibold text-green-600">{session.presentStudents.length}</span>
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Ausentes: <span className="font-semibold text-red-600">{session.absentStudents.length}</span>
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Taxa: {attendanceRate}%
-                  </p>
-                </div>
+                {/* Teacher View: Show all stats */}
+                {isTeacher && (
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600">
+                      Presentes: <span className="font-semibold text-green-600">{session.presentStudents.length}</span>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Ausentes: <span className="font-semibold text-red-600">{session.absentStudents.length}</span>
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Taxa: {attendanceRate}%
+                    </p>
+                  </div>
+                )}
+
+                {/* Student View: Show only their attendance */}
+                {!isTeacher && (
+                  <div className="text-right">
+                    {isCurrentUserPresent && (
+                      <p className="text-sm font-semibold text-green-600 flex items-center gap-1">
+                        ✓ Presente
+                      </p>
+                    )}
+                    {isCurrentUserAbsent && (
+                      <p className="text-sm font-semibold text-red-600 flex items-center gap-1">
+                        ✗ Ausente
+                      </p>
+                    )}
+                    {!isCurrentUserPresent && !isCurrentUserAbsent && (
+                      <p className="text-sm text-gray-500">Não registrado</p>
+                    )}
+                  </div>
+                )}
+
                 <span className="text-gray-500 text-xl">{isExpanded ? '▼' : '▶'}</span>
               </div>
             </button>
@@ -116,51 +161,80 @@ const SessionList: React.FC<SessionListProps> = ({ sessions, loading }) => {
                   </div>
                 </div>
 
-                {/* Present Students */}
-                {session.presentStudents.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
-                      ✓ Alunos Presentes ({session.presentStudents.length})
-                    </h4>
-                    <div className="space-y-1">
-                      {session.presentStudents.map((student) => (
-                        <div
-                          key={student.id}
-                          className="bg-green-50 border border-green-200 rounded p-2 text-sm"
-                        >
-                          <p className="font-medium text-gray-800">
-                            {student.firstName} {student.lastName}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {student.email} • Matrícula: {student.registrationNumber}
-                          </p>
+                {/* Teacher View: Show all students lists */}
+                {isTeacher && (
+                  <>
+                    {/* Present Students */}
+                    {session.presentStudents.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                          ✓ Alunos Presentes ({session.presentStudents.length})
+                        </h4>
+                        <div className="space-y-1">
+                          {session.presentStudents.map((student) => (
+                            <div
+                              key={student.id}
+                              className="bg-green-50 border border-green-200 rounded p-2 text-sm"
+                            >
+                              <p className="font-medium text-gray-800">
+                                {student.firstName} {student.lastName}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {student.email} • Matrícula: {student.registrationNumber}
+                              </p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    )}
+
+                    {/* Absent Students */}
+                    {session.absentStudents.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                          ✗ Alunos Ausentes ({session.absentStudents.length})
+                        </h4>
+                        <div className="space-y-1">
+                          {session.absentStudents.map((student) => (
+                            <div
+                              key={student.id}
+                              className="bg-red-50 border border-red-200 rounded p-2 text-sm"
+                            >
+                              <p className="font-medium text-gray-800">
+                                {student.firstName} {student.lastName}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                {student.email} • Matrícula: {student.registrationNumber}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
-                {/* Absent Students */}
-                {session.absentStudents.length > 0 && (
+                {/* Student View: Only show their status */}
+                {!isTeacher && (
                   <div>
-                    <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
-                      ✗ Alunos Ausentes ({session.absentStudents.length})
-                    </h4>
-                    <div className="space-y-1">
-                      {session.absentStudents.map((student) => (
-                        <div
-                          key={student.id}
-                          className="bg-red-50 border border-red-200 rounded p-2 text-sm"
-                        >
-                          <p className="font-medium text-gray-800">
-                            {student.firstName} {student.lastName}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {student.email} • Matrícula: {student.registrationNumber}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                    {isCurrentUserPresent && (
+                      <div className="bg-green-50 border border-green-200 rounded p-3">
+                        <p className="font-semibold text-green-700">✓ Você estava presente nesta aula</p>
+                        <p className="text-sm text-gray-600 mt-1">Taxa de presença da turma: {attendanceRate}%</p>
+                      </div>
+                    )}
+                    {isCurrentUserAbsent && (
+                      <div className="bg-red-50 border border-red-200 rounded p-3">
+                        <p className="font-semibold text-red-700">✗ Você estava ausente nesta aula</p>
+                        <p className="text-sm text-gray-600 mt-1">Taxa de presença da turma: {attendanceRate}%</p>
+                      </div>
+                    )}
+                    {!isCurrentUserPresent && !isCurrentUserAbsent && (
+                      <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                        <p className="font-semibold text-gray-700">ℹ️ Seu registro não foi encontrado</p>
+                        <p className="text-sm text-gray-600 mt-1">Taxa de presença da turma: {attendanceRate}%</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
