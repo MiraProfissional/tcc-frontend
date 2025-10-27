@@ -3,11 +3,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import AuthContext from '../utils/AuthContext'
 import { getDisciplineById, deleteDiscipline, removeStudentFromDiscipline } from '../utils/Services/DisciplineService'
+import { getSessionsByDiscipline } from '../utils/Services/SessionService'
 import EditDisciplineModal from '../components/EditDisciplineModal'
 import AddStudentToDisciplineModal from '../components/AddStudentToDisciplineModal'
 import FaceRecognitionButton from '../components/FaceRecognitionButton'
+import SessionList from '../components/SessionList'
 import toast from 'react-hot-toast'
 import type { DisciplineDto } from '../utils/Dtos/Discipline.dto'
+import type { SessionDto } from '../utils/Dtos/Session.dto'
 
 type Payload = { sub?: number; email?: string; userRole?: string; role?: string }
 
@@ -17,11 +20,14 @@ const DisciplineDetail: React.FC = () => {
   const token = auth?.token
 
   const [discipline, setDiscipline] = useState<DisciplineDto | null>(null)
+  const [sessions, setSessions] = useState<SessionDto[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingSessions, setLoadingSessions] = useState(false)
   const [userRole, setUserRole] = useState<string>('')
   const [userId, setUserId] = useState<number | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'sessions' | 'students'>('sessions')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -56,6 +62,27 @@ const DisciplineDetail: React.FC = () => {
       }
     }
     loadDiscipline()
+    return () => { mounted = false }
+  }, [id])
+
+  // Load sessions
+  useEffect(() => {
+    let mounted = true
+    async function loadSessions() {
+      if (!id) return
+      setLoadingSessions(true)
+      try {
+        const data = await getSessionsByDiscipline(Number(id))
+        if (!mounted) return
+        setSessions(data)
+      } catch (err) {
+        console.error('Erro ao carregar aulas', err)
+        // Don't show error toast, just fail silently
+      } finally {
+        if (mounted) setLoadingSessions(false)
+      }
+    }
+    loadSessions()
     return () => { mounted = false }
   }, [id])
 
@@ -190,49 +217,84 @@ const DisciplineDetail: React.FC = () => {
           )}
         </div>
 
-        {/* Students list - visible to teachers or the teacher owner */}
+        {/* Tabs for Sessions and Students - visible to teachers or the teacher owner */}
         {isTeacher && (
           <div className="mt-6">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold">
-                Alunos Matriculados ({discipline.students.length})
-              </h3>
+            {/* Tab Navigation */}
+            <div className="flex border-b mb-4">
               <button
-                onClick={() => setIsAddStudentModalOpen(true)}
-                className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700"
+                onClick={() => setActiveTab('sessions')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === 'sessions'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
               >
-                + Adicionar
+                📚 Aulas Registradas ({sessions.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('students')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === 'students'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                👥 Alunos Matriculados ({discipline.students.length})
               </button>
             </div>
-            {discipline.students.length === 0 ? (
-              <p className="text-gray-600">Nenhum aluno matriculado.</p>
-            ) : (
-              <div className="space-y-2">
-                {discipline.students.map((student) => (
-                  <div
-                    key={student.id}
-                    className="border rounded p-3 flex justify-between items-center"
+
+            {/* Tab Content */}
+            {activeTab === 'sessions' && (
+              <div>
+                <SessionList sessions={sessions} loading={loadingSessions} />
+              </div>
+            )}
+
+            {activeTab === 'students' && (
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-lg font-semibold">
+                    Alunos Matriculados ({discipline.students.length})
+                  </h3>
+                  <button
+                    onClick={() => setIsAddStudentModalOpen(true)}
+                    className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {student.firstName} {student.lastName}
-                      </p>
-                      <p className="text-sm text-gray-600">{student.email}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Matrícula</p>
-                        <p className="font-medium">{student.registrationNumber}</p>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveStudent(student.id)}
-                        className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700"
+                    + Adicionar
+                  </button>
+                </div>
+                {discipline.students.length === 0 ? (
+                  <p className="text-gray-600">Nenhum aluno matriculado.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {discipline.students.map((student) => (
+                      <div
+                        key={student.id}
+                        className="border rounded p-3 flex justify-between items-center"
                       >
-                        Remover
-                      </button>
-                    </div>
+                        <div>
+                          <p className="font-medium">
+                            {student.firstName} {student.lastName}
+                          </p>
+                          <p className="text-sm text-gray-600">{student.email}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-sm text-gray-600">Matrícula</p>
+                            <p className="font-medium">{student.registrationNumber}</p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveStudent(student.id)}
+                            className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
