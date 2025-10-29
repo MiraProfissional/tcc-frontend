@@ -145,10 +145,10 @@ function HomePage() {
         <nav className="p-4 flex-1">
           <ul className="space-y-2">
             <li>
-              <Link to="/home" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-50">Início</Link>
+              <Link to="/home" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Início</Link>
             </li>
             <li>
-              <Link to="/home/profile" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-50">Meu perfil</Link>
+              <Link to="/home/profile" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Meu perfil</Link>
             </li>
             {/* Disciplines removed per request */}
           </ul>

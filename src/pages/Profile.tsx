@@ -49,54 +49,53 @@ const Profile: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-semibold mb-4">Meu Perfil</h2>
+      <h2 className="text-2xl font-bold mb-6">Meu Perfil</h2>
       {person ? (
-        <div className="bg-white shadow rounded p-6 max-w-xl">
-          <div className="flex justify-between items-start mb-6">
+        <div className="bg-white shadow rounded-lg p-8 max-w-3xl">
+          <div className="flex justify-between items-start mb-8">
             <div>
-              <p className="text-lg font-medium">{person.firstName} {person.lastName}</p>
-              <p className="text-sm text-gray-600">{person.email}</p>
+              <p className="text-2xl font-bold text-gray-900">{person.firstName} {person.lastName}</p>
+              <p className="text-base text-gray-600 mt-1">{person.email}</p>
             </div>
             <button
               onClick={() => setIsEditModalOpen(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-medium"
             >
               ✎ Editar
             </button>
           </div>
           
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            <div>
-              
-              <div className="text-xs text-gray-500">Matrícula</div>
-              <div>{person.registrationNumber}</div>
+          <div className="mt-6 grid grid-cols-2 gap-6">
+            <div className="border-b pb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Matrícula</p>
+              <p className="text-lg font-medium text-gray-900 mt-1">{person.registrationNumber}</p>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">CPF</div>
-              <div>{person.cpf}</div>
+            <div className="border-b pb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">CPF</p>
+              <p className="text-lg font-medium text-gray-900 mt-1">{person.cpf}</p>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">Celular</div>
-              <div>{person.cellphone}</div>
+            <div className="border-b pb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Celular</p>
+              <p className="text-lg font-medium text-gray-900 mt-1">{person.cellphone}</p>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">Data de Nascimento</div>
-              <div>{formatDateBirth(person.dateBirth)}</div>
+            <div className="border-b pb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data de Nascimento</p>
+              <p className="text-lg font-medium text-gray-900 mt-1">{formatDateBirth(person.dateBirth)}</p>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">Perfil</div>
-              <div>{mapRole(person.userRole as unknown as string)}</div>
+            <div className="border-b pb-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Perfil</p>
+              <p className="text-lg font-medium text-gray-900 mt-1">{mapRole(person.userRole as unknown as string)}</p>
             </div>
             {'course' in person && (
-              <div>
-                <div className="text-xs text-gray-500">Curso</div>
-                <div>{(person as StudentDto).course}</div>
+              <div className="border-b pb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Curso</p>
+                <p className="text-lg font-medium text-gray-900 mt-1">{(person as StudentDto).course}</p>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <p>Perfil não disponível</p>
+        <p className="text-gray-600">Perfil não disponível</p>
       )}
 
       <EditProfileModal
