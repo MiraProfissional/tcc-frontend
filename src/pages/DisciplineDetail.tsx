@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode'
 import AuthContext from '../utils/AuthContext'
 import { getDisciplineById, deleteDiscipline, removeStudentFromDiscipline } from '../utils/Services/DisciplineService'
 import { getSessionsByDiscipline } from '../utils/Services/SessionService'
+import { calculateAttendance, getAttendanceColor } from '../utils/frequencyUtils'
 import EditDisciplineModal from '../components/EditDisciplineModal'
 import AddStudentToDisciplineModal from '../components/AddStudentToDisciplineModal'
 import FaceRecognitionButton from '../components/FaceRecognitionButton'
@@ -215,6 +216,15 @@ const DisciplineDetail: React.FC = () => {
               </p>
             </div>
           )}
+          {/* Show attendance for students viewing their own discipline */}
+          {!isTeacher && userId && (
+            <div>
+              <p className="text-sm text-gray-600">Sua Frequência</p>
+              <p className={`font-medium ${getAttendanceColor(calculateAttendance(discipline, userId, sessions).attendancePercentage)}`}>
+                {calculateAttendance(discipline, userId, sessions).attendedSessions}/{calculateAttendance(discipline, userId, sessions).totalSessions} ({calculateAttendance(discipline, userId, sessions).attendancePercentage}%)
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Tabs for Sessions and Students */}
@@ -269,31 +279,41 @@ const DisciplineDetail: React.FC = () => {
                   <p className="text-gray-600">Nenhum aluno matriculado.</p>
                 ) : (
                   <div className="space-y-2">
-                    {discipline.students.map((student) => (
-                      <div
-                        key={student.id}
-                        className="border rounded p-3 flex justify-between items-center"
-                      >
-                        <div>
-                          <p className="font-medium">
-                            {student.firstName} {student.lastName}
-                          </p>
-                          <p className="text-sm text-gray-600">{student.email}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <p className="text-sm text-gray-600">Matrícula</p>
-                            <p className="font-medium">{student.registrationNumber}</p>
+                    {discipline.students.map((student) => {
+                      const attendance = calculateAttendance(discipline, student.id, sessions)
+                      const attendanceColor = getAttendanceColor(attendance.attendancePercentage)
+                      return (
+                        <div
+                          key={student.id}
+                          className="border rounded p-3 flex justify-between items-center"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {student.firstName} {student.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600">{student.email}</p>
                           </div>
-                          <button
-                            onClick={() => handleRemoveStudent(student.id)}
-                            className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700"
-                          >
-                            Remover
-                          </button>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-sm text-gray-600">Frequência</p>
+                              <p className={`font-medium ${attendanceColor}`}>
+                                {attendance.attendedSessions}/{attendance.totalSessions} ({attendance.attendancePercentage}%)
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-600">Matrícula</p>
+                              <p className="font-medium">{student.registrationNumber}</p>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveStudent(student.id)}
+                              className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700"
+                            >
+                              Remover
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
