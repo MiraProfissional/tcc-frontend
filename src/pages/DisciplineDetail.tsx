@@ -87,6 +87,28 @@ const DisciplineDetail: React.FC = () => {
     return () => { mounted = false }
   }, [id])
 
+  // Listen for session creation events and refresh list
+  useEffect(() => {
+    const handleSessionCreated = (event: Event) => {
+      const customEvent = event as CustomEvent
+      const { disciplineId } = customEvent.detail || {}
+      
+      // Only refresh if the event is for this discipline
+      if (disciplineId === Number(id)) {
+        if (id) {
+          getSessionsByDiscipline(Number(id))
+            .then((data) => setSessions(data))
+            .catch((err) => {
+              console.error('Erro ao recarregar aulas', err)
+            })
+        }
+      }
+    }
+
+    window.addEventListener('sessionCreated', handleSessionCreated)
+    return () => window.removeEventListener('sessionCreated', handleSessionCreated)
+  }, [id])
+
   const handleDelete = () => {
     if (!discipline || !window.confirm('Tem certeza que deseja deletar esta disciplina?')) return
 

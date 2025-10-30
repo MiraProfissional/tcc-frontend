@@ -59,6 +59,13 @@ const FaceRecognitionButton: React.FC<FaceRecognitionButtonProps> = ({ disciplin
 
       await stopRecognition()
       toast.success('Reconhecimento facial finalizado')
+
+      // Dispatch event to notify other components (like DisciplineDetail) to refresh sessions
+      window.dispatchEvent(
+        new CustomEvent('sessionCreated', {
+          detail: { disciplineId },
+        })
+      )
     } catch (err) {
       console.error('Erro ao finalizar reconhecimento facial', err)
       toast.error('Não foi possível finalizar o reconhecimento facial')
