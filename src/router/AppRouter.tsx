@@ -7,6 +7,7 @@ import Profile from "../pages/Profile"
 import DisciplineDetail from "../pages/DisciplineDetail"
 import ForgotPassword from "../pages/ForgotPassword"
 import ResetPassword from "../pages/ResetPassword"
+import Enrollment from "../pages/Enrollment"
 import ProtectedRoute from "../utils/Guards/AuthGuard"
 
 export default function AppRouter() {
@@ -33,6 +34,7 @@ export default function AppRouter() {
         >
           <Route index element={<div />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="enrollment" element={<Enrollment />} />
           <Route path="discipline/:id" element={<DisciplineDetail />} />
         </Route>
       </Routes>

@@ -135,6 +135,23 @@ function HomePage() {
     return () => window.removeEventListener('disciplineDeleted', handleDisciplineDeleted)
   }, [token])
 
+  // Listen for student enrollment event and refresh list
+  useEffect(() => {
+    const handleStudentEnrolled = () => {
+      // Reload disciplines when student enrolls in a new discipline
+      if (token?.accessToken) {
+        getDisciplinesByUser()
+          .then((data) => setDisciplines(data))
+          .catch((err) => {
+            console.error('Erro ao recarregar disciplinas', err)
+          })
+      }
+    }
+
+    window.addEventListener('studentEnrolled', handleStudentEnrolled)
+    return () => window.removeEventListener('studentEnrolled', handleStudentEnrolled)
+  }, [token])
+
   return (
     <div className="h-screen flex bg-gray-100">
       <aside className="w-64 bg-white border-r flex flex-col fixed h-screen">
@@ -147,10 +164,15 @@ function HomePage() {
             <li>
               <Link to="/home" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Início</Link>
             </li>
+            {role === 'STUDENT' && (
+              <li>
+                <Link to="/home/enrollment" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Matrícula</Link>
+              </li>
+            )}
+            {/* Disciplines removed per request */}
             <li>
               <Link to="/home/profile" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Meu perfil</Link>
             </li>
-            {/* Disciplines removed per request */}
           </ul>
         </nav>
         
