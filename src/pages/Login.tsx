@@ -34,19 +34,41 @@ const Login: React.FC = () => {
     submittingRef.current = true
     try {
       await signIn(data.email, data.password)
-      toast.success('Login efetuado com sucesso')
+      toast.success('Login efetuado com sucesso! 🎉')
       navigate('/home')
     } catch (err: unknown) {
       console.error('Erro ao fazer login', err)
+      let statusCode: number | undefined
       let message: string | undefined
+      
       if (typeof err === 'object' && err !== null) {
         const e = err as Record<string, unknown>
         const resp = e['response'] as Record<string, unknown> | undefined
+        statusCode = resp?.['status'] as number | undefined
         const d = resp?.['data'] as Record<string, unknown> | undefined
         if (d && typeof d['message'] === 'string') message = d['message'] as string
       }
-      if (!message && err instanceof Error) message = err.message
-      toast.error(message || 'Erro na requisição')
+      
+      // Tratamento específico por status code
+      if (statusCode === 401 || statusCode === 400) {
+        toast.error('Email ou senha inválidos', {
+          duration: 4000,
+        })
+      } else if (statusCode === 429) {
+        toast.error('Muitas tentativas. Tente novamente mais tarde.', {
+          duration: 5000
+        })
+      } else if (statusCode && statusCode >= 500) {
+        toast.error('Erro no servidor. Tente novamente em alguns momentos.', {
+          duration: 4000
+        })
+      } else if (message) {
+        toast.error(message, { duration: 4000 })
+      } else if (err instanceof Error) {
+        toast.error(`⚠️ ${err.message}`, { duration: 4000 })
+      } else {
+        toast.error('⚠️ Erro desconhecido. Verifique sua conexão.', { duration: 4000 })
+      }
     } finally {
       submittingRef.current = false
     }
