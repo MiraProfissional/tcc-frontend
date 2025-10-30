@@ -156,75 +156,80 @@ const FaceCapture: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Capturar Foto do Rosto</h1>
-          <p className="text-gray-600">Etapa 2 de 2 - Confirmação de Identidade</p>
-        </div>
+    <div className="w-screen h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-10 flex items-center justify-center overflow-hidden">
+      <div className="flex gap-4 w-full h-[90vh]">
+        {/* Left: Header + Instructions */}
+        <div className="flex flex-col">
+          {/* Header */}
+          <div className="mb-2">
+            <h1 className="text-xl font-bold text-gray-800">Capturar Foto do Rosto</h1>
+            <p className="text-gray-600 text-xs">Etapa 2 de 2</p>
+          </div>
 
-        {/* Instructions Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">📸 Instruções para a Foto</h2>
-          <div className="space-y-3 text-sm text-gray-700">
-            <div className="flex items-start gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Sem acessórios (óculos de sol, chapéu, lenço, etc.)</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Fundo branco ou neutro (sem elementos ao fundo)</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Apenas o rosto visível (enquadre bem)</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Boa iluminação (evite sombras no rosto)</span>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-blue-600 font-bold">✓</span>
-              <span>Expresão neutra ou sorriso natural</span>
+          {/* Instructions - Auto height */}
+          <div className="bg-white rounded-lg shadow p-4 w-72">
+            <h2 className="text-sm font-semibold text-gray-800 mb-2">📸 Instruções</h2>
+            <div className="space-y-1 text-xs text-gray-700">
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
+                <span>Sem acessórios</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
+                <span>Fundo neutro</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
+                <span>Rosto visível</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
+                <span>Boa iluminação</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
+                <span>Expressão neutra</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Camera/Upload Area */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        {/* Right: Camera/Upload Area */}
+        <div className="flex-1 bg-white rounded-lg shadow p-4 flex flex-col overflow-hidden">
           {!capturedImage ? (
             <>
               {/* Camera Section */}
-              <div className="mb-6">
-                {cameraError && (
-                  <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
-                    <p className="text-red-800 text-sm">{cameraError}</p>
-                  </div>
-                )}
-
-                <div className="bg-gray-900 rounded-lg overflow-hidden mb-4" style={{ aspectRatio: '16/9' }}>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
+              {cameraError && (
+                <div className="bg-red-50 border border-red-200 rounded p-2 mb-2 text-red-800 text-xs">
+                  {cameraError}
                 </div>
+              )}
 
-                <canvas ref={canvasRef} className="hidden" />
+              {/* Video Preview */}
+              <div className="bg-gray-900 rounded-lg overflow-hidden mb-3 flex-1">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Camera Button */}
+              <div className="mb-2">
                 {!isCameraActive ? (
                   <button
                     onClick={startCamera}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium mb-4"
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium text-sm"
                   >
                     📷 Abrir Câmera
                   </button>
                 ) : (
                   <button
                     onClick={capturePhoto}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium mb-4"
+                    className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium text-sm"
                   >
                     📸 Capturar Foto
                   </button>
@@ -232,18 +237,19 @@ const FaceCapture: React.FC = () => {
               </div>
 
               {/* Divider */}
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-2 my-2">
                 <div className="flex-1 h-px bg-gray-300"></div>
-                <span className="text-gray-500 text-sm">ou</span>
+                <span className="text-gray-500 text-xs">ou</span>
                 <div className="flex-1 h-px bg-gray-300"></div>
               </div>
 
               {/* File Upload Section */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-600 transition-colors"
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-blue-600 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <p className="text-gray-600 font-medium mb-2">📁 Selecionar Foto</p>
-                <p className="text-gray-500 text-sm">Clique ou arraste uma imagem aqui</p>
+                <p className="text-gray-600 font-medium text-xs">📁 Selecionar Foto</p>
+                <p className="text-gray-500 text-xs">Clique ou arraste</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -256,37 +262,34 @@ const FaceCapture: React.FC = () => {
           ) : (
             <>
               {/* Preview Section */}
-              <div className="mb-6">
-                <p className="text-gray-600 text-sm font-medium mb-3">Pré-visualização da Foto</p>
-                <div className="bg-gray-100 rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                  <img
-                    src={capturedImage}
-                    alt="Foto capturada"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+              <p className="text-gray-600 text-xs font-medium mb-2">Pré-visualização</p>
+              <div className="bg-gray-100 rounded-lg overflow-hidden flex-1 mb-2">
+                <img
+                  src={capturedImage}
+                  alt="Foto capturada"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* Preview Actions */}
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
                   onClick={retakePhoto}
-                  className="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 font-medium"
+                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 font-medium text-sm"
                 >
-                  🔄 Tirar Outra Foto
+                  🔄 Outra Foto
                 </button>
                 <button
                   onClick={uploadPhoto}
                   disabled={uploading}
-                  className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium disabled:bg-gray-400"
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium text-sm disabled:bg-gray-400"
                 >
-                  {uploading ? '⏳ Enviando...' : '✅ Enviar Foto'}
+                  {uploading ? '⏳ Enviando...' : '✅ Enviar'}
                 </button>
               </div>
             </>
           )}
         </div>
-
       </div>
     </div>
   )

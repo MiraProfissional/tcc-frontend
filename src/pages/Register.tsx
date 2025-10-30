@@ -25,7 +25,15 @@ const schema = yup.object({
   dateBirth: yup.string().required('Data de nascimento é obrigatória'),
   cpf: yup.string().required('CPF é obrigatório'),
   cellphone: yup.string().required('Celular é obrigatório'),
-  registrationNumber: yup.string().required('Número de matrícula é obrigatório'),
+  registrationNumber: yup.string().when('userRole', {
+    is: (val: unknown) => val === 'STUDENT',
+    then: (schema) => schema
+      .required('Número de matrícula é obrigatório')
+      .matches(/^\d{10}$/, 'Matrícula deve ter exatamente 10 dígitos numéricos'),
+    otherwise: (schema) => schema
+      .required('SIAP é obrigatório')
+      .matches(/^\d{7}$/, 'SIAP deve ter exatamente 7 dígitos numéricos'),
+  }),
   course: yup.string().when('userRole', {
     is: (val: unknown) => val === 'STUDENT',
     then: (schema) => schema.required('Curso é obrigatório para estudantes'),
@@ -225,8 +233,15 @@ const Register: React.FC = () => {
           </div>
           
           <div>
-            <label className="block mb-1 text-sm text-gray-700">Nº Matrícula</label>
-            <input {...register('registrationNumber')} className="w-full p-2 border rounded" />
+            <label className="block mb-1 text-sm text-gray-700">
+              {userRole === 'STUDENT' ? 'Nº Matrícula' : 'CIAP'}
+            </label>
+            <input
+              {...register('registrationNumber')}
+              className="w-full p-2 border rounded"
+              placeholder={userRole === 'STUDENT' ? '1234567890' : '1234567'}
+              maxLength={userRole === 'STUDENT' ? 10 : 7}
+            />
             {errors.registrationNumber && <p className="text-sm text-red-600">{errors.registrationNumber.message}</p>}
           </div>
 
