@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { getProfile } from '../utils/Services/UserService'
 import { formatDateBirth } from '../utils/Helpers/dateFormatter'
 import EditProfileModal from '../components/EditProfileModal'
+import { ChangePasswordModal } from '../components/ChangePasswordModal'
 import toast from 'react-hot-toast'
 import type { StudentDto } from '../utils/Dtos/Student.dto'
 import type { TeacherDto } from '../utils/Dtos/Teacher.dto'
@@ -21,6 +22,7 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileType | null>(null)
   const [loading, setLoading] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -57,12 +59,20 @@ const Profile: React.FC = () => {
               <p className="text-2xl font-bold text-gray-900">{person.firstName} {person.lastName}</p>
               <p className="text-base text-gray-600 mt-1">{person.email}</p>
             </div>
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-medium"
-            >
-              ✎ Editar
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsChangePasswordModalOpen(true)}
+                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-medium"
+              >
+                Trocar Senha
+              </button>
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-medium"
+              >
+                ✎ Editar
+              </button>
+            </div>
           </div>
           
           <div className="mt-6 grid grid-cols-2 gap-6">
@@ -104,6 +114,12 @@ const Profile: React.FC = () => {
         isStudent={isStudent}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
+      />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        userRole={person?.userRole || 'STUDENT'}
       />
     </div>
   )
