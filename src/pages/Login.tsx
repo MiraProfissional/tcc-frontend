@@ -115,6 +115,12 @@ const Login: React.FC = () => {
         <div className="mt-4 text-center text-sm text-gray-600">
           Ainda não tem conta? <Link to="/register" className="text-indigo-600">Cadastre-se</Link>
         </div>
+
+        <div className="mt-2 text-center text-sm">
+          <Link to="/forgot-password" className="text-indigo-600 hover:text-indigo-700">
+            Esqueci minha senha
+          </Link>
+        </div>
       </form>
     </div>
   )
