@@ -156,20 +156,20 @@ const FaceCapture: React.FC = () => {
   }
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-10 flex items-center justify-center overflow-hidden">
-      <div className="flex gap-4 w-full h-[90vh]">
-        {/* Left: Header + Instructions */}
-        <div className="flex flex-col">
+    <div className="w-screen h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-4 sm:p-6 lg:p-10 flex items-center justify-center overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-4 w-full h-full lg:h-[90vh] max-w-7xl">
+        {/* Header + Instructions */}
+        <div className="flex flex-col lg:flex-col w-full lg:w-auto">
           {/* Header */}
-          <div className="mb-2">
-            <h1 className="text-xl font-bold text-gray-800">Capturar Foto do Rosto</h1>
+          <div className="mb-2 lg:mb-2">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-800">Capturar Foto do Rosto</h1>
             <p className="text-gray-600 text-xs">Etapa 2 de 2</p>
           </div>
 
-          {/* Instructions - Auto height */}
-          <div className="bg-white rounded-lg shadow p-4 w-72">
+          {/* Instructions - Collapsible on mobile, always visible on desktop */}
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 w-full lg:w-72">
             <h2 className="text-sm font-semibold text-gray-800 mb-2">📸 Instruções</h2>
-            <div className="space-y-1 text-xs text-gray-700">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-x-4 gap-y-1 text-xs text-gray-700">
               <div className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold flex-shrink-0">✓</span>
                 <span>Sem acessórios</span>
@@ -194,8 +194,8 @@ const FaceCapture: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Camera/Upload Area */}
-        <div className="flex-1 bg-white rounded-lg shadow p-4 flex flex-col overflow-hidden">
+        {/* Camera/Upload Area */}
+        <div className="flex-1 bg-white rounded-lg shadow p-3 sm:p-4 flex flex-col overflow-hidden min-h-0">
           {!capturedImage ? (
             <>
               {/* Camera Section */}
@@ -206,7 +206,7 @@ const FaceCapture: React.FC = () => {
               )}
 
               {/* Video Preview */}
-              <div className="bg-gray-900 rounded-lg overflow-hidden mb-3 flex-1">
+              <div className="bg-gray-900 rounded-lg overflow-hidden mb-2 sm:mb-3 flex-1 min-h-[200px] sm:min-h-[300px]">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -222,14 +222,14 @@ const FaceCapture: React.FC = () => {
                 {!isCameraActive ? (
                   <button
                     onClick={startCamera}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium text-sm"
+                    className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm"
                   >
                     📷 Abrir Câmera
                   </button>
                 ) : (
                   <button
                     onClick={capturePhoto}
-                    className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium text-sm"
+                    className="w-full bg-green-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm"
                   >
                     📸 Capturar Foto
                   </button>
@@ -245,7 +245,7 @@ const FaceCapture: React.FC = () => {
 
               {/* File Upload Section */}
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center cursor-pointer hover:border-blue-600 transition-colors"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-3 sm:p-4 text-center cursor-pointer hover:border-blue-600 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <p className="text-gray-600 font-medium text-xs">📁 Selecionar Foto</p>
@@ -263,7 +263,7 @@ const FaceCapture: React.FC = () => {
             <>
               {/* Preview Section */}
               <p className="text-gray-600 text-xs font-medium mb-2">Pré-visualização</p>
-              <div className="bg-gray-100 rounded-lg overflow-hidden flex-1 mb-2">
+              <div className="bg-gray-100 rounded-lg overflow-hidden flex-1 mb-2 min-h-[200px] sm:min-h-[300px]">
                 <img
                   src={capturedImage}
                   alt="Foto capturada"
@@ -275,14 +275,14 @@ const FaceCapture: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={retakePhoto}
-                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 font-medium text-sm"
+                  className="flex-1 bg-gray-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-gray-700 font-medium text-sm"
                 >
                   🔄 Outra Foto
                 </button>
                 <button
                   onClick={uploadPhoto}
                   disabled={uploading}
-                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium text-sm disabled:bg-gray-400"
+                  className="flex-1 bg-green-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm disabled:bg-gray-400"
                 >
                   {uploading ? '⏳ Enviando...' : '✅ Enviar'}
                 </button>

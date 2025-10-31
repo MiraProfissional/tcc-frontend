@@ -23,6 +23,7 @@ function HomePage() {
   const [disciplines, setDisciplines] = useState<DisciplineDto[]>([])
   const [loadingDisciplines, setLoadingDisciplines] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const location = useLocation()
 
   const mapRole = (r?: string) => {
@@ -154,7 +155,43 @@ function HomePage() {
 
   return (
     <div className="h-screen flex bg-gray-100">
-      <aside className="w-64 bg-white border-r flex flex-col fixed h-screen">
+      {/* Mobile Menu Button - visible only on mobile */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md hover:bg-gray-50"
+        aria-label="Toggle menu"
+      >
+        <svg
+          className="w-6 h-6 text-gray-700"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          {isMobileMenuOpen ? (
+            <path d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
+      {/* Overlay for mobile menu */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - responsive */}
+      <aside className={`
+        w-64 bg-white border-r flex flex-col fixed h-screen z-40 transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+      `}>
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Bem vindo {name}</h2>
           {role && <p className="text-sm text-gray-500">{mapRole(role)}</p>}
@@ -162,16 +199,34 @@ function HomePage() {
         <nav className="p-4 flex-1">
           <ul className="space-y-2">
             <li>
-              <Link to="/home" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Início</Link>
+              <Link 
+                to="/home" 
+                className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Início
+              </Link>
             </li>
             {role === 'STUDENT' && (
               <li>
-                <Link to="/home/enrollment" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Matrícula</Link>
+                <Link 
+                  to="/home/enrollment" 
+                  className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Matrícula
+                </Link>
               </li>
             )}
             {/* Disciplines removed per request */}
             <li>
-              <Link to="/home/profile" className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100">Meu perfil</Link>
+              <Link 
+                to="/home/profile" 
+                className="block w-full text-left px-3 py-2 rounded hover:bg-gray-100"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Meu perfil
+              </Link>
             </li>
           </ul>
         </nav>
@@ -187,7 +242,7 @@ function HomePage() {
         </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto ml-64">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto lg:ml-64 pt-16 lg:pt-8">
         {/* Main content area — nested routes will render here */}
         <div className="max-w-5xl mx-auto">
           {/* keep the home card above nested content; hide when not at index */}
