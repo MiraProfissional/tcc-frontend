@@ -75,9 +75,9 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm bg-white p-6 rounded shadow" aria-label="login-form">
-  <h2 className="text-2xl font-semibold mb-4">Entrar</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-sm bg-white p-6 sm:p-8 rounded shadow" aria-label="login-form">
+  <h2 className="text-xl sm:text-2xl font-semibold mb-4">Entrar</h2>
 
   {/* mensagens de erro agora aparecem via toast */}
 
@@ -98,14 +98,15 @@ const Login: React.FC = () => {
             <input
               {...register('password')}
               type={showPassword ? 'text' : 'password'}
-              className={`block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-200 p-2 pr-10 ${errors.password ? 'border-red-500' : ''}`}
+              className={`block w-full rounded border border-gray-300 shadow-sm focus:ring focus:ring-indigo-200 p-2 pr-12 ${errors.password ? 'border-red-500' : ''}`}
               placeholder="••••••••"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
               title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             >
               {showPassword ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -177,13 +177,14 @@ const ResetPassword: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     id="newPassword"
                     placeholder="••••••••"
-                    className="block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-500 p-2 pr-10"
+                    className="block w-full rounded border border-gray-300 shadow-sm focus:ring focus:ring-blue-500 p-2 pr-12"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
                     title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
