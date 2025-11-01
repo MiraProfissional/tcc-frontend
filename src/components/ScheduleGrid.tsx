@@ -97,19 +97,25 @@ function ScheduleGrid({ disciplines }: ScheduleGridProps) {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="p-3 bg-blue-600 text-white">
-        <h2 className="text-lg font-bold">📅 Grade Horária</h2>
+      <div className="p-3 sm:p-4 bg-blue-600 text-white">
+        <h2 className="text-base sm:text-lg font-bold">📅 Grade Horária</h2>
         <p className="text-xs opacity-90">Suas disciplinas organizadas por horário</p>
       </div>
 
+      {/* Adicionar hint para scroll horizontal em mobile */}
+      <div className="bg-gray-50 px-3 py-2 text-xs text-gray-600 sm:hidden border-b">
+        💡 Deslize para ver todos os dias →
+      </div>
+
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-xs">
+        <table className="w-full border-collapse text-xs min-w-[600px]">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border p-1 text-xs font-semibold text-gray-700 w-20">Horário</th>
+              <th className="border p-1 text-xs font-semibold text-gray-700 w-16 sm:w-20 sticky left-0 bg-gray-100 z-10">Horário</th>
               {DAYS.map((day) => (
                 <th key={day.key} className="border p-1 text-xs font-semibold text-gray-700">
-                  {day.label}
+                  <span className="hidden sm:inline">{day.label}</span>
+                  <span className="sm:hidden">{day.label.slice(0, 3)}</span>
                 </th>
               ))}
             </tr>
@@ -127,9 +133,9 @@ function ScheduleGrid({ disciplines }: ScheduleGridProps) {
                 {/* Slots do período */}
                 {period.slots.map((timeSlot) => (
                   <tr key={`${period.key}${timeSlot.slot}`} className="hover:bg-gray-50">
-                    <td className="border p-1 text-xs text-gray-600 text-center bg-gray-50">
+                    <td className="border p-1 text-xs text-gray-600 text-center bg-gray-50 sticky left-0 z-10">
                       <div className="font-semibold text-xs">{period.key}{timeSlot.slot}</div>
-                      <div className="text-[10px] leading-tight">{timeSlot.time}</div>
+                      <div className="text-[9px] sm:text-[10px] leading-tight">{timeSlot.time}</div>
                     </td>
                     {DAYS.map((day) => {
                       const disciplinesInCell = getDisciplinesForCell(day.key, period.key, timeSlot.slot)

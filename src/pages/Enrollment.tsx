@@ -190,11 +190,11 @@ const Enrollment: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Matrícula em Disciplinas</h1>
-          <p className="text-gray-600 mb-6">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Matrícula em Disciplinas</h1>
+          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
             Selecione as disciplinas que deseja se matricular
           </p>
 
@@ -205,7 +205,7 @@ const Enrollment: React.FC = () => {
               placeholder="Pesquisar por nome, código ou professor..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <svg
               className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -244,33 +244,33 @@ const Enrollment: React.FC = () => {
 
         {/* Disciplines grid */}
         {!loading && availableDisciplines.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {availableDisciplines.map((discipline) => (
               <div
                 key={discipline.id}
-                className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow"
               >
-                <h3 className="text-lg font-semibold mb-2">{discipline.name}</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">{discipline.name}</h3>
 
-                <div className="space-y-2 text-sm mb-4">
-                  <div className="flex justify-between">
+                <div className="space-y-2 text-xs sm:text-sm mb-4">
+                  <div className="flex justify-between gap-2">
                     <span className="text-gray-600">Código:</span>
-                    <span className="font-medium">{discipline.code}</span>
+                    <span className="font-medium text-right">{discipline.code}</span>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-gray-600">Semestre:</span>
-                    <span className="font-medium">{discipline.semester}</span>
+                    <span className="font-medium text-right">{discipline.semester}</span>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-gray-600">Sala:</span>
-                    <span className="font-medium">{discipline.disciplineRoom}</span>
+                    <span className="font-medium text-right">{discipline.disciplineRoom}</span>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-gray-600">Horários:</span>
-                    <span className="font-medium">
+                    <span className="font-medium text-right break-words">
                       {discipline.disciplineTime && discipline.disciplineTime.length > 0
                         ? discipline.disciplineTime.join(', ')
                         : 'Não especificado'}
@@ -278,9 +278,9 @@ const Enrollment: React.FC = () => {
                   </div>
 
                   {discipline.teacher && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-2">
                       <span className="text-gray-600">Professor:</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-right break-words">
                         {`${discipline.teacher.firstName} ${discipline.teacher.lastName}`}
                       </span>
                     </div>
@@ -291,7 +291,7 @@ const Enrollment: React.FC = () => {
                   onClick={() => handleEnroll(discipline.id)}
                   disabled={enrolling === discipline.id || !isStudent || hasScheduleConflict(discipline.id).hasConflict}
                   title={hasScheduleConflict(discipline.id).hasConflict ? `Conflita com: ${hasScheduleConflict(discipline.id).conflictingName}` : ''}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                 >
                   {enrolling === discipline.id ? (
                     <span className="flex items-center justify-center">
@@ -306,7 +306,7 @@ const Enrollment: React.FC = () => {
                 </button>
 
                 {hasScheduleConflict(discipline.id).hasConflict && (
-                  <p className="text-xs text-orange-600 mt-2 font-medium">
+                  <p className="text-xs text-orange-600 mt-2 font-medium break-words">
                     Conflita com: <strong>{hasScheduleConflict(discipline.id).conflictingName}</strong>
                   </p>
                 )}

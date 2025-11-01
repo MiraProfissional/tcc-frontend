@@ -16,27 +16,102 @@ const FaceCapture: React.FC = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false)
 
-  // Initialize camera
+  // Initialize camera with better error handling
   const startCamera = async () => {
     try {
       setCameraError(null)
+      setIsRequestingPermission(true)
+
+      // Check if mediaDevices API is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Seu navegador não suporta acesso à câmera. Use um navegador mais recente.')
+      }
+
+      // Show toast to inform user about permission request
+      toast.loading('Solicitando permissão para acessar a câmera...', { id: 'camera-permission' })
+
+      // Request camera access with better constraints
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
         },
+        audio: false,
+      })
+      
+      toast.dismiss('camera-permission')
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(err => {
+            console.error('Erro ao iniciar vídeo', err)
+          })
+        }
+        
+        setIsCameraActive(true)
+        toast.success('Câmera ativada com sucesso!')
+      }
+    } catch (err: unknown) {
+      toast.dismiss('camera-permission')
+      console.error('Erro ao acessar câmera', err)
+      
+      let errorMessage = 'Não foi possível acessar sua câmera.'
+      
+      // Provide specific error messages based on error type
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          errorMessage = '❌ Permissão negada! Você precisa permitir o acesso à câmera nas configurações do navegador.'
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          errorMessage = '📷 Nenhuma câmera foi encontrada no seu dispositivo.'
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          errorMessage = '⚠️ A câmera está sendo usada por outro aplicativo. Feche outros apps e tente novamente.'
+        } else if (err.name === 'OverconstrainedError') {
+          errorMessage = '⚙️ As configurações da câmera não são suportadas. Tentando novamente...'
+          // Try again with simpler constraints
+          trySimpleCamera()
+          return
+        } else if (err.name === 'TypeError') {
+          errorMessage = '🌐 Seu navegador não suporta acesso à câmera. Use Chrome, Firefox, Safari ou Edge.'
+        } else if (err.message) {
+          errorMessage = err.message
+        }
+      }
+      
+      setCameraError(errorMessage)
+      toast.error(errorMessage, { duration: 5000 })
+    } finally {
+      setIsRequestingPermission(false)
+    }
+  }
+
+  // Fallback function with simpler constraints
+  const trySimpleCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
       })
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(err => {
+            console.error('Erro ao iniciar vídeo', err)
+          })
+        }
         setIsCameraActive(true)
+        setCameraError(null)
+        toast.success('Câmera ativada com sucesso!')
       }
     } catch (err) {
-      console.error('Erro ao acessar câmera', err)
-      setCameraError('Não foi possível acessar sua câmera. Verifique as permissões.')
-      toast.error('Erro ao acessar câmera')
+      console.error('Erro ao tentar câmera simples', err)
+      setCameraError('Não foi possível acessar a câmera mesmo com configurações simplificadas.')
     }
   }
 
@@ -191,6 +266,18 @@ const FaceCapture: React.FC = () => {
                 <span>Expressão neutra</span>
               </div>
             </div>
+            
+            {/* Help section for permission issues */}
+            {cameraError && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <h3 className="text-xs font-semibold text-gray-800 mb-1">💡 Ajuda</h3>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <p>• Clique no ícone 🔒 ou 🎥 na barra de endereço</p>
+                  <p>• Permita o acesso à câmera</p>
+                  <p>• Recarregue a página se necessário</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -222,9 +309,10 @@ const FaceCapture: React.FC = () => {
                 {!isCameraActive ? (
                   <button
                     onClick={startCamera}
-                    className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm"
+                    disabled={isRequestingPermission}
+                    className="w-full bg-blue-600 text-white py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm disabled:bg-blue-400 disabled:cursor-not-allowed"
                   >
-                    📷 Abrir Câmera
+                    {isRequestingPermission ? '⏳ Solicitando permissão...' : '📷 Abrir Câmera'}
                   </button>
                 ) : (
                   <button

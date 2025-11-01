@@ -180,31 +180,31 @@ const DisciplineDetail: React.FC = () => {
     userRole === 'TEACHER' || userRole === 'ADMIN' || (discipline && userId !== null && discipline.teacher?.id === userId)
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-4">
         <Link
           to="/home"
-          className="text-blue-600 hover:text-blue-800"
+          className="text-blue-600 hover:text-blue-800 text-sm sm:text-base"
         >
           ← Voltar
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-start mb-4">
-          <h2 className="text-2xl font-bold">{discipline.name}</h2>
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4 sm:mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold break-words">{discipline.name}</h2>
           {isTeacher && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <FaceRecognitionButton disciplineId={discipline.id} variant="icon" />
               <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-700 text-sm sm:text-base whitespace-nowrap"
               >
                 ✎ Editar
               </button>
               <button
                 onClick={handleDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                className="bg-red-600 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-700 text-sm sm:text-base whitespace-nowrap"
               >
                 🗑 Deletar
               </button>
@@ -212,7 +212,7 @@ const DisciplineDetail: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div>
             <p className="text-sm text-gray-600">Código</p>
             <p className="font-medium">{discipline.code}</p>
@@ -250,29 +250,29 @@ const DisciplineDetail: React.FC = () => {
         </div>
 
         {/* Tabs for Sessions and Students */}
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           {/* Tab Navigation */}
-          <div className="flex border-b mb-4">
+          <div className="flex border-b mb-4 overflow-x-auto">
             <button
               onClick={() => setActiveTab('sessions')}
-              className={`px-4 py-2 font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
                 activeTab === 'sessions'
                   ? 'border-b-2 border-blue-600 text-blue-600'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              📚 Aulas Registradas ({sessions.length})
+              📚 Aulas ({sessions.length})
             </button>
             {isTeacher && (
               <button
                 onClick={() => setActiveTab('students')}
-                className={`px-4 py-2 font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === 'students'
                     ? 'border-b-2 border-blue-600 text-blue-600'
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
-                👥 Alunos Matriculados ({discipline.students.length})
+                👥 Alunos ({discipline.students.length})
               </button>
             )}
           </div>
@@ -286,13 +286,13 @@ const DisciplineDetail: React.FC = () => {
 
             {activeTab === 'students' && isTeacher && (
               <div>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-semibold">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
+                  <h3 className="text-base sm:text-lg font-semibold">
                     Alunos Matriculados ({discipline.students.length})
                   </h3>
                   <button
                     onClick={() => setIsAddStudentModalOpen(true)}
-                    className="bg-green-600 text-white px-3 py-1 text-sm rounded hover:bg-green-700"
+                    className="bg-green-600 text-white px-3 py-2 text-sm rounded hover:bg-green-700 whitespace-nowrap w-full sm:w-auto"
                   >
                     + Adicionar
                   </button>

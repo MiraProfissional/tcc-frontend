@@ -50,56 +50,56 @@ const Profile: React.FC = () => {
   const isStudent = person?.userRole === 'STUDENT'
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Meu Perfil</h2>
+    <div className="p-4 sm:p-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Meu Perfil</h2>
       {person ? (
-        <div className="bg-white shadow rounded-lg p-8 max-w-3xl">
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{person.firstName} {person.lastName}</p>
-              <p className="text-base text-gray-600 mt-1">{person.email}</p>
+        <div className="bg-white shadow rounded-lg p-4 sm:p-6 lg:p-8 max-w-3xl">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 sm:mb-8">
+            <div className="flex-1 min-w-0">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{person.firstName} {person.lastName}</p>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 break-all">{person.email}</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={() => setIsChangePasswordModalOpen(true)}
-                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-medium"
+                className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded hover:bg-green-700 font-medium text-sm sm:text-base whitespace-nowrap"
               >
                 Trocar Senha
               </button>
               <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-medium"
+                className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded hover:bg-blue-700 font-medium text-sm sm:text-base whitespace-nowrap"
               >
                 ✎ Editar
               </button>
             </div>
           </div>
           
-          <div className="mt-6 grid grid-cols-2 gap-6">
-            <div className="border-b pb-4">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="border-b pb-3 sm:pb-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Matrícula</p>
-              <p className="text-lg font-medium text-gray-900 mt-1">{person.registrationNumber}</p>
+              <p className="text-base sm:text-lg font-medium text-gray-900 mt-1 break-all">{person.registrationNumber}</p>
             </div>
-            <div className="border-b pb-4">
+            <div className="border-b pb-3 sm:pb-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">CPF</p>
-              <p className="text-lg font-medium text-gray-900 mt-1">{person.cpf}</p>
+              <p className="text-base sm:text-lg font-medium text-gray-900 mt-1">{person.cpf}</p>
             </div>
-            <div className="border-b pb-4">
+            <div className="border-b pb-3 sm:pb-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Celular</p>
-              <p className="text-lg font-medium text-gray-900 mt-1">{person.cellphone}</p>
+              <p className="text-base sm:text-lg font-medium text-gray-900 mt-1">{person.cellphone}</p>
             </div>
-            <div className="border-b pb-4">
+            <div className="border-b pb-3 sm:pb-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Data de Nascimento</p>
-              <p className="text-lg font-medium text-gray-900 mt-1">{formatDateBirth(person.dateBirth)}</p>
+              <p className="text-base sm:text-lg font-medium text-gray-900 mt-1">{formatDateBirth(person.dateBirth)}</p>
             </div>
-            <div className="border-b pb-4">
+            <div className="border-b pb-3 sm:pb-4">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Perfil</p>
-              <p className="text-lg font-medium text-gray-900 mt-1">{mapRole(person.userRole as unknown as string)}</p>
+              <p className="text-base sm:text-lg font-medium text-gray-900 mt-1">{mapRole(person.userRole as unknown as string)}</p>
             </div>
             {'course' in person && (
-              <div className="border-b pb-4">
+              <div className="border-b pb-3 sm:pb-4">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Curso</p>
-                <p className="text-lg font-medium text-gray-900 mt-1">{(person as StudentDto).course}</p>
+                <p className="text-base sm:text-lg font-medium text-gray-900 mt-1">{(person as StudentDto).course}</p>
               </div>
             )}
           </div>

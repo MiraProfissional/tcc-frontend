@@ -155,11 +155,13 @@ function HomePage() {
 
   return (
     <div className="h-screen flex bg-gray-100">
-      {/* Mobile Menu Button - visible only on mobile */}
+      {/* Mobile Menu Button - visible only on mobile, hidden when menu is open */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md hover:bg-gray-50"
-        aria-label="Toggle menu"
+        className={`lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md hover:bg-gray-50 transition-opacity ${
+          isMobileMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        aria-label="Abrir menu"
       >
         <svg
           className="w-6 h-6 text-gray-700"
@@ -170,11 +172,7 @@ function HomePage() {
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          {isMobileMenuOpen ? (
-            <path d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          )}
+          <path d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
@@ -192,11 +190,30 @@ function HomePage() {
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
+        {/* Close button - visible only on mobile when menu is open */}
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden absolute top-4 right-4 p-2 rounded-md hover:bg-gray-100 transition-colors z-50"
+          aria-label="Fechar menu"
+        >
+          <svg
+            className="w-6 h-6 text-gray-700"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Bem vindo {name}</h2>
+          <h2 className="text-lg font-semibold pr-8">Bem vindo {name}</h2>
           {role && <p className="text-sm text-gray-500">{mapRole(role)}</p>}
         </div>
-        <nav className="p-4 flex-1">
+        <nav className="p-4 flex-1 overflow-y-auto">
           <ul className="space-y-2">
             <li>
               <Link 
@@ -231,13 +248,24 @@ function HomePage() {
           </ul>
         </nav>
         
-        {/* Logout button at the bottom of sidebar */}
-        <div className="p-4 border-t">
+        {/* Logout button at the bottom of sidebar - always visible */}
+        <div className="p-4 border-t bg-white flex-shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-3 py-2 rounded text-red-600 hover:bg-red-50 font-medium"
+            className="w-full text-left px-3 py-2 rounded text-red-600 hover:bg-red-50 font-medium flex items-center gap-2"
           >
-            Sair
+            <svg 
+              className="w-5 h-5" 
+              fill="none" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth="2" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Sair</span>
           </button>
         </div>
       </aside>

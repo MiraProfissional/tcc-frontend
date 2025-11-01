@@ -62,34 +62,34 @@ const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline, isTeacher =
   const attendanceColor = getAttendanceColor(attendancePercentage)
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-      <h3 className="text-lg font-semibold mb-2">{discipline.name}</h3>
+    <div className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <h3 className="text-base sm:text-lg font-semibold mb-2 break-words">{discipline.name}</h3>
       
-      <div className="space-y-2 text-sm mb-4">
-        <div className="flex justify-between">
+      <div className="space-y-2 text-xs sm:text-sm mb-4">
+        <div className="flex justify-between gap-2">
           <span className="text-gray-600">Código:</span>
-          <span className="font-medium">{discipline.code}</span>
+          <span className="font-medium text-right">{discipline.code}</span>
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <span className="text-gray-600">Semestre:</span>
-          <span className="font-medium">{discipline.semester}</span>
+          <span className="font-medium text-right">{discipline.semester}</span>
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <span className="text-gray-600">Sala:</span>
-          <span className="font-medium">{discipline.disciplineRoom}</span>
+          <span className="font-medium text-right">{discipline.disciplineRoom}</span>
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <span className="text-gray-600">Horários:</span>
-          <span className="font-medium">{discipline.disciplineTime.join(', ')}</span>
+          <span className="font-medium text-right break-words">{discipline.disciplineTime.join(', ')}</span>
         </div>
         
         {!isTeacher && (
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <span className="text-gray-600">Professor:</span>
-            <span className="font-medium">
+            <span className="font-medium text-right break-words">
               {discipline.teacher.firstName} {discipline.teacher.lastName}
             </span>
           </div>
@@ -97,16 +97,16 @@ const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline, isTeacher =
 
         {/* Attendance info for students */}
         {!isTeacher && attendanceStats && !loadingSessions && (
-          <div className="flex justify-between pt-2 border-t">
+          <div className="flex justify-between gap-2 pt-2 border-t">
             <span className="text-gray-600">Frequência:</span>
-            <span className={`font-medium ${attendanceColor}`}>
+            <span className={`font-medium text-right ${attendanceColor}`}>
               {attendanceStats.attendedSessions}/{attendanceStats.totalSessions} ({attendancePercentage}%)
             </span>
           </div>
         )}
 
         {!isTeacher && loadingSessions && (
-          <div className="flex justify-between pt-2 border-t">
+          <div className="flex justify-between gap-2 pt-2 border-t">
             <span className="text-gray-600">Frequência:</span>
             <span className="text-gray-400 text-xs">Carregando...</span>
           </div>
@@ -119,7 +119,7 @@ const DisciplineCard: React.FC<DisciplineCardProps> = ({ discipline, isTeacher =
         )}
         <Link
           to={`/home/discipline/${discipline.id}`}
-          className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+          className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm sm:text-base"
         >
           Detalhes
         </Link>
