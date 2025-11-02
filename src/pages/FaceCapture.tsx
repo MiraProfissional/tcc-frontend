@@ -359,6 +359,17 @@ const FaceCapture: React.FC = () => {
                 />
               </div>
 
+              {/* Instructions before upload */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                <p className="text-xs font-semibold text-blue-800 mb-1">✓ Verifique antes de enviar:</p>
+                <ul className="text-xs text-blue-700 space-y-0.5">
+                  <li>• Seu rosto está totalmente visível</li>
+                  <li>• A foto está nítida e bem iluminada</li>
+                  <li>• Não há acessórios cobrindo o rosto</li>
+                  <li>• A expressão está neutra</li>
+                </ul>
+              </div>
+
               {/* Preview Actions */}
               <div className="flex gap-2">
                 <button

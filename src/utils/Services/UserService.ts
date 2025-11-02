@@ -8,6 +8,28 @@ export async function signUpStudent(body: Record<string, unknown>) {
   return api.post(config.endpoints.students, body)
 }
 
+export async function signUpStudentWithFace(body: Record<string, unknown>, faceImageBlob: Blob) {
+  // Create FormData to send both JSON data and file
+  const formData = new FormData()
+  
+  // Append all body fields as individual form fields
+  Object.keys(body).forEach(key => {
+    const value = body[key]
+    if (value !== undefined && value !== null) {
+      formData.append(key, String(value))
+    }
+  })
+  
+  // Append the face image file
+  formData.append('faceImage', faceImageBlob, 'face-photo.jpg')
+  
+  return api.post(`${config.endpoints.students}/with-face`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
 export async function signUpTeacher(body: Record<string, unknown>) {
   return api.post(config.endpoints.teachers, body)
 }

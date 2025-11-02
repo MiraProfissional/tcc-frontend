@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import { signUpStudent, signUpTeacher } from '../utils/Services/UserService'
 import AuthContext from '../utils/AuthContext'
 import { courseOptions } from '../utils/Enums/Course.enum'
-import PasswordTooltip from '../components/PasswordTooltip'
 import { maskCPF, maskCellphone, unmaskCPF, unmaskCellphone } from '../utils/Helpers/masks'
 import toast from 'react-hot-toast'
 
@@ -20,11 +19,19 @@ const schema = yup.object({
   lastName: yup.string().required('Sobrenome é obrigatório'),
   email: yup.string().email('Email inválido').required('Email é obrigatório'),
   password: yup.string().matches(passwordRegex, {
-    message: 'Minimum eight characters, at least one letter, one number and one special character',
+    message: 'Mínimo de 8 caracteres, pelo menos uma letra, um número e um caractere especial',
   }).required('Senha é obrigatória'),
-  dateBirth: yup.string().required('Data de nascimento é obrigatória'),
+  dateBirth: yup.string()
+    .required('Data de nascimento é obrigatória')
+    .matches(/^\d{2}\/\d{2}\/\d{4}$/, 'Data deve estar no formato dd/mm/aaaa'),
   cpf: yup.string().required('CPF é obrigatório'),
-  cellphone: yup.string().required('Celular é obrigatório'),
+  cellphone: yup.string()
+    .required('Celular é obrigatório')
+    .test('valid-cellphone', 'Celular inválido', (value) => {
+      if (!value) return false
+      const unmasked = value.replace(/\D/g, '')
+      return unmasked.length === 11
+    }),
   registrationNumber: yup.string().when('userRole', {
     is: (val: unknown) => val === 'STUDENT',
     then: (schema) => schema
@@ -65,9 +72,9 @@ const Register: React.FC = () => {
       const email = String(data.email)
       const password = String(data.password)
       const dateBirthRaw = String(data.dateBirth)
-      // Convert date input (local) to an ISO8601 timestamp in UTC with +00:00 offset
-      // Example output: 2001-03-16T00:00:00+00:00
-      const [y, m, d] = dateBirthRaw.split('-').map(Number)
+      // Convert date from dd/mm/yyyy to ISO8601 timestamp in UTC with +00:00 offset
+      // Example: "16/03/2001" → "2001-03-16T00:00:00+00:00"
+      const [d, m, y] = dateBirthRaw.split('/').map(Number)
       const utcDate = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 0, 0, 0))
       // toISOString() returns e.g. 2001-03-16T00:00:00.000Z — replace milliseconds+Z with +00:00
       const dateBirthIso = utcDate.toISOString().replace(/\.\d{3}Z$/, '+00:00')
@@ -100,10 +107,16 @@ const Register: React.FC = () => {
       try {
         await auth?.signIn(email, password)
 
+        // Small delay to ensure token is set before navigation
+        await new Promise(resolve => setTimeout(resolve, 500))
+
         // Redirect to face capture for students, to home for teachers
         if (userRole === 'STUDENT') {
+          console.log('Redirecionando estudante para captura de foto...')
+          toast.success('Login realizado! Redirecionando para captura de foto...')
           navigate('/face-capture')
         } else {
+          console.log('Redirecionando professor para home...')
           navigate('/home')
         }
       } catch (loginErr) {
@@ -166,39 +179,65 @@ const Register: React.FC = () => {
               <input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
-                className="w-full p-2 pr-20 border rounded"
+                className="w-full p-2 pr-12 border rounded"
               />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-                <PasswordTooltip password={password} />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
-                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM19.5 13a8.971 8.971 0 01-1.07 3.6M12 19c4.478 0 8.268-2.943 9.543-7A9.969 9.969 0 0020.437 5.197M3 3l18 18" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7C7.523 19 3.732 16.057 2.458 12z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
+                title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM19.5 13a8.971 8.971 0 01-1.07 3.6M12 19c4.478 0 8.268-2.943 9.543-7A9.969 9.969 0 0020.437 5.197M3 3l18 18" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7C7.523 19 3.732 16.057 2.458 12z" />
+                  </svg>
+                )}
+              </button>
             </div>
-            {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+            <div className="mt-1 text-xs bg-gray-50 p-2 rounded">
+              <p className="font-semibold mb-1 text-gray-700">A senha deve conter:</p>
+              <ul className="space-y-0.5">
+                <li className={password && password.length >= 8 ? 'text-green-600' : 'text-gray-600'}>
+                  {password && password.length >= 8 ? '✓' : '○'} Mínimo de 8 caracteres
+                </li>
+                <li className={password && /[A-Za-z]/.test(password) ? 'text-green-600' : 'text-gray-600'}>
+                  {password && /[A-Za-z]/.test(password) ? '✓' : '○'} Pelo menos uma letra
+                </li>
+                <li className={password && /\d/.test(password) ? 'text-green-600' : 'text-gray-600'}>
+                  {password && /\d/.test(password) ? '✓' : '○'} Pelo menos um número
+                </li>
+                <li className={password && /[@$!%*#?&]/.test(password) ? 'text-green-600' : 'text-gray-600'}>
+                  {password && /[@$!%*#?&]/.test(password) ? '✓' : '○'} Pelo menos um caractere especial (@$!%*#?&)
+                </li>
+              </ul>
+            </div>
+            {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
           </div>
 
           <div>
             <label className="block mb-1 text-sm text-gray-700">Data de Nascimento</label>
             <input
               {...register('dateBirth')}
-              type="date"
+              type="text"
               className="w-full p-2 border rounded"
+              placeholder="dd/mm/aaaa"
+              maxLength={10}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, '')
+                if (value.length >= 2) {
+                  value = value.slice(0, 2) + '/' + value.slice(2)
+                }
+                if (value.length >= 5) {
+                  value = value.slice(0, 5) + '/' + value.slice(5, 9)
+                }
+                e.target.value = value
+              }}
             />
             {errors.dateBirth && <p className="text-sm text-red-600">{errors.dateBirth.message}</p>}
           </div>
