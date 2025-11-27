@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import toast from 'react-hot-toast'
 import { createDiscipline } from '../utils/Services/DisciplineService'
-import { getAllStudents } from '../utils/Services/UserService'
 import type { CreateDisciplineDto } from '../utils/Dtos/CreateDiscipline.dto'
-import type { StudentDto } from '../utils/Dtos/Student.dto'
 
 interface CreateDisciplineModalProps {
   isOpen: boolean
@@ -32,9 +30,6 @@ const CreateDisciplineModal: React.FC<CreateDisciplineModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false)
   const [timeInput, setTimeInput] = useState('')
-  const [allStudents, setAllStudents] = useState<StudentDto[]>([])
-  const [loadingStudents, setLoadingStudents] = useState(false)
-  const [selectedStudents, setSelectedStudents] = useState<number[]>([])
 
   const {
     register,
@@ -56,32 +51,6 @@ const CreateDisciplineModal: React.FC<CreateDisciplineModalProps> = ({
   })
 
   const disciplineTime = watch('disciplineTime')
-
-  useEffect(() => {
-    if (isOpen) {
-      loadAllStudents()
-      setSelectedStudents([])
-    }
-  }, [isOpen])
-
-  const loadAllStudents = async () => {
-    setLoadingStudents(true)
-    try {
-      const students = await getAllStudents()
-      setAllStudents(students)
-    } catch (err) {
-      console.error('Erro ao carregar alunos', err)
-      toast.error('Não foi possível carregar a lista de alunos')
-    } finally {
-      setLoadingStudents(false)
-    }
-  }
-
-  const handleToggleStudent = (studentId: number) => {
-    setSelectedStudents((prev) =>
-      prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId]
-    )
-  }
 
   const addTime = () => {
     if (!timeInput.trim()) {
@@ -113,14 +82,9 @@ const CreateDisciplineModal: React.FC<CreateDisciplineModalProps> = ({
     setLoading(true)
     try {
       const createData = data as CreateDisciplineDto
-      // Add selected students if any
-      if (selectedStudents.length > 0) {
-        createData.students = selectedStudents
-      }
       await createDiscipline(createData)
       toast.success('Disciplina criada com sucesso!')
       reset()
-      setSelectedStudents([])
       onSuccess()
       onClose()
     } catch (err) {
@@ -232,43 +196,6 @@ const CreateDisciplineModal: React.FC<CreateDisciplineModalProps> = ({
               ))}
             </div>
             {errors.disciplineTime && <p className="text-red-600 text-sm mt-1">{errors.disciplineTime.message}</p>}
-          </div>
-
-          {/* Students Selection */}
-          <div className="border-t pt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Adicionar Alunos (opcional)</label>
-            {loadingStudents ? (
-              <p className="text-gray-600 text-sm">Carregando alunos...</p>
-            ) : allStudents.length === 0 ? (
-              <p className="text-gray-600 text-sm">Nenhum aluno disponível.</p>
-            ) : (
-              <div className="border rounded-lg p-3 max-h-64 overflow-y-auto space-y-2 bg-gray-50">
-                {allStudents.map((student) => (
-                  <label
-                    key={student.id}
-                    className="flex items-center p-2 border rounded hover:bg-white cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedStudents.includes(student.id)}
-                      onChange={() => handleToggleStudent(student.id)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                    />
-                    <div className="ml-3 flex-1">
-                      <p className="font-medium text-sm">
-                        {student.firstName} {student.lastName}
-                      </p>
-                      <p className="text-xs text-gray-600">{student.email}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
-            {selectedStudents.length > 0 && (
-              <p className="text-sm text-blue-600 font-medium mt-2">
-                {selectedStudents.length} aluno(s) selecionado(s)
-              </p>
-            )}
           </div>
 
           <div className="flex gap-2 pt-4">

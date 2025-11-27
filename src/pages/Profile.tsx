@@ -77,7 +77,9 @@ const Profile: React.FC = () => {
           
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="border-b pb-3 sm:pb-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Matrícula</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                {isStudent ? 'Matrícula' : 'CIAP'}
+              </p>
               <p className="text-base sm:text-lg font-medium text-gray-900 mt-1 break-all">{person.registrationNumber}</p>
             </div>
             <div className="border-b pb-3 sm:pb-4">

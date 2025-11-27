@@ -202,12 +202,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Matrícula</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {isStudent ? 'Matrícula' : 'CIAP'}
+              </label>
               <input
                 type="number"
                 {...register('registrationNumber')}
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="123456789"
+                placeholder={isStudent ? '1234567890' : '1234567'}
               />
               {errors.registrationNumber && <p className="text-red-600 text-sm mt-1">{errors.registrationNumber.message}</p>}
             </div>
