@@ -85,23 +85,58 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     setLoading(true)
     try {
       const formData = data as Record<string, unknown>
-      
-      const body: Record<string, unknown> = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        dateBirth: parseHTMLDateToISO(String(formData.dateBirth)),
-        cpf: unmaskCPF(String(formData.cpf)),
-        cellphone: unmaskCellphone(String(formData.cellphone)),
-        registrationNumber: formData.registrationNumber,
+
+      // Build a partial body with only changed fields
+      const changes: Record<string, unknown> = {}
+
+      if (String(formData.firstName) !== String(profile.firstName)) {
+        changes.firstName = String(formData.firstName)
+      }
+      if (String(formData.lastName) !== String(profile.lastName)) {
+        changes.lastName = String(formData.lastName)
+      }
+      if (String(formData.email) !== String(profile.email)) {
+        changes.email = String(formData.email)
       }
 
-      // Only add course if it's a student
+      // dateBirth: compare using the same input format used in the form
+      const currentDateInput = formatDateToHTMLInput(profile.dateBirth)
+      if (String(formData.dateBirth) !== currentDateInput) {
+        changes.dateBirth = parseHTMLDateToISO(String(formData.dateBirth))
+      }
+
+      // CPF and cellphone: compare unmasked values
+      const newCpf = unmaskCPF(String(formData.cpf))
+      const oldCpf = unmaskCPF(String(profile.cpf ?? ''))
+      if (newCpf && newCpf !== oldCpf) {
+        changes.cpf = newCpf
+      }
+
+      const newCell = unmaskCellphone(String(formData.cellphone))
+      const oldCell = unmaskCellphone(String(profile.cellphone ?? ''))
+      if (newCell && newCell !== oldCell) {
+        changes.cellphone = newCell
+      }
+
+      const newReg = Number(formData.registrationNumber)
+      const oldReg = Number(profile.registrationNumber)
+      if (!Number.isNaN(newReg) && newReg !== oldReg) {
+        changes.registrationNumber = newReg
+      }
+
       if (isStudent) {
-        body.course = formData.course
+        const newCourse = String(formData.course ?? '')
+        const oldCourse = ('course' in profile) ? String((profile as StudentDto).course ?? '') : ''
+        if (newCourse !== oldCourse) changes.course = newCourse
       }
 
-      await updateUserProfile(body)
+      if (Object.keys(changes).length === 0) {
+        toast('Nenhuma alteração detectada', { icon: 'ℹ️' })
+        setLoading(false)
+        return
+      }
+
+      await updateUserProfile(changes)
       toast.success('Perfil atualizado com sucesso!')
       onSuccess()
       onClose()
